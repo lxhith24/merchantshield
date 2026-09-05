@@ -1,528 +1,897 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MerchantShield Architecture</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'JetBrains Mono', monospace;
-      background: #020617;
-      min-height: 100vh;
-      padding: 2rem;
-      color: white;
-    }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    
-    .header {
-      margin-bottom: 2rem;
-    }
-    
-    .header-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .pulse-dot {
-      width: 12px;
-      height: 12px;
-      background: #22d3ee;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-    }
-    
-    .subtitle {
-      color: #94a3b8;
-      font-size: 0.875rem;
-      margin-left: 1.75rem;
-    }
-    
-    .diagram-container {
-      background: rgba(15, 23, 42, 0.5);
-      border-radius: 1rem;
-      border: 1px solid #1e293b;
-      padding: 1.5rem;
-      overflow-x: auto;
-    }
-    
-    svg {
-      width: 100%;
-      min-width: 1100px;
-      display: block;
-    }
-    
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    
-    .card {
-      background: rgba(15, 23, 42, 0.5);
-      border-radius: 0.75rem;
-      border: 1px solid #1e293b;
-      padding: 1.25rem;
-    }
-    
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-    
-    .card-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-    
-    .card-dot.cyan { background: #22d3ee; }
-    .card-dot.emerald { background: #34d399; }
-    .card-dot.violet { background: #a78bfa; }
-    .card-dot.amber { background: #fbbf24; }
-    .card-dot.rose { background: #fb7185; }
-    .card-dot.orange { background: #fb923c; }
-    
-    .card h3 {
-      font-size: 0.875rem;
-      font-weight: 600;
-    }
-    
-    .card ul {
-      list-style: none;
-      color: #94a3b8;
-      font-size: 0.75rem;
-    }
-    
-    .card li {
-      margin-bottom: 0.375rem;
-    }
-    
-    .footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      color: #475569;
-      font-size: 0.75rem;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MerchantShield Architecture</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --ground:#edefec; --surface:#f8f9f6; --sunk:#e3e6e1;
+  --fg:#161b19; --fg-muted:#5a655f; --line:#c7cec8; --line-soft:#d9ded9;
+  --det:#2a5b78; --det-wash:#dce8ef;
+  --llm:#8a5f11; --llm-wash:#f2e7c9;
+  --hum:#2b6a4e; --hum-wash:#d8e9de;
+  --blk:#912e27; --blk-wash:#f0dbd8;
+  --band:#e6e9e4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#10151a; --surface:#171d23; --sunk:#1f272e;
+    --fg:#e1e7e4; --fg-muted:#939e99; --line:#323c43; --line-soft:#262f36;
+    --det:#7ab2d4; --det-wash:#182935;
+    --llm:#deac4a; --llm-wash:#312712;
+    --hum:#69b78e; --hum-wash:#13281e;
+    --blk:#dc7b70; --blk-wash:#321916;
+    --band:#151b21;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#10151a; --surface:#171d23; --sunk:#1f272e;
+  --fg:#e1e7e4; --fg-muted:#939e99; --line:#323c43; --line-soft:#262f36;
+  --det:#7ab2d4; --det-wash:#182935;
+  --llm:#deac4a; --llm-wash:#312712;
+  --hum:#69b78e; --hum-wash:#13281e;
+  --blk:#dc7b70; --blk-wash:#321916;
+  --band:#151b21;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--fg);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px 120px}
+.col{max-width:660px}
+
+h1,h2,h3,.eyebrow,.mono,th,.chip,figcaption,.tag{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,kbd{font-family:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace}
+
+/* ---------- masthead ---------- */
+header{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fg-muted);margin:0 0 18px}
+h1{font-size:clamp(38px,5.4vw,60px);font-weight:700;letter-spacing:-.028em;
+  line-height:1.02;margin:0 0 20px;text-wrap:balance}
+.standfirst{font-size:20px;line-height:1.5;color:var(--fg);margin:0 0 26px;max-width:640px}
+.standfirst em{font-style:normal;box-shadow:inset 0 -.5em 0 var(--det-wash)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px;color:var(--fg-muted);letter-spacing:.02em}
+
+/* ---------- legend ---------- */
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:0;border:1px solid var(--line);border-radius:2px;overflow:hidden;margin:36px 0 8px}
+.legend div{padding:14px 16px;border-right:1px solid var(--line);background:var(--surface)}
+.legend div:last-child{border-right:none}
+.legend b{display:block;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.legend span{font-size:14.5px;line-height:1.45;color:var(--fg-muted);display:block}
+.l-det b{color:var(--det)} .l-llm b{color:var(--llm)}
+.l-hum b{color:var(--hum)} .l-blk b{color:var(--blk)}
+.legend-note{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--fg-muted);
+  margin:10px 0 0;letter-spacing:.01em}
+
+/* ---------- sections ---------- */
+section{padding-top:60px}
+.sechead{display:flex;gap:20px;align-items:baseline;border-top:2px solid var(--fg);
+  padding-top:14px;margin-bottom:26px}
+.sechead .num{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;
+  color:var(--det);letter-spacing:.06em;flex:none;padding-top:5px}
+h2{font-size:29px;font-weight:600;letter-spacing:-.02em;margin:0;line-height:1.15;text-wrap:balance}
+.sechead p{margin:6px 0 0;font-size:16px;color:var(--fg-muted);line-height:1.45}
+h3{font-size:15px;font-weight:600;letter-spacing:.01em;margin:34px 0 10px}
+p{margin:0 0 16px}
+.col p:last-child{margin-bottom:0}
+a{color:var(--det)}
+
+ul.tight{margin:0 0 16px;padding-left:0;list-style:none}
+ul.tight li{padding-left:20px;position:relative;margin-bottom:9px}
+ul.tight li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:1.5px;background:var(--line-soft);
+  background:var(--fg-muted);opacity:.55}
+
+code{font-size:.855em;background:var(--sunk);padding:.1em .34em;border-radius:2px;
+  border:1px solid var(--line-soft)}
+
+/* ---------- figures ---------- */
+figure{margin:34px 0 0;max-width:1180px}
+.well{overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:2px;padding:6px}
+.well svg{display:block;height:auto}
+figcaption{font-size:13px;line-height:1.5;color:var(--fg-muted);margin-top:12px;
+  max-width:760px;letter-spacing:.005em}
+figcaption b{color:var(--fg);font-weight:600}
+
+/* svg primitives */
+svg text{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--fg)}
+.band{fill:var(--band)}
+.rail{font-size:10.5px;letter-spacing:.14em;fill:var(--fg-muted)}
+.railn{font-size:12px;font-weight:600;fill:var(--det)}
+.n{fill:var(--surface);stroke:var(--line);stroke-width:1.25}
+.n-det{fill:var(--det-wash);stroke:var(--det);stroke-width:1.5}
+.n-llm{fill:var(--llm-wash);stroke:var(--llm);stroke-width:1.5}
+.n-hum{fill:var(--hum-wash);stroke:var(--hum);stroke-width:1.5}
+.n-blk{fill:var(--blk-wash);stroke:var(--blk);stroke-width:1.5}
+.n-dash{stroke-dasharray:5 4}
+.ttl{font-size:12.5px;font-weight:600}
+.sub{font-size:10.5px;fill:var(--fg-muted)}
+.sub-det{font-size:10.5px;fill:var(--det)}
+.ed{stroke:var(--fg-muted);stroke-width:1.4;fill:none}
+.ed-det{stroke:var(--det);stroke-width:1.5;fill:none}
+.ed-llm{stroke:var(--llm);stroke-width:1.5;fill:none}
+.ed-blk{stroke:var(--blk);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.ed-dash{stroke-dasharray:5 4}
+.el{font-size:10px;fill:var(--fg-muted)}
+.el-det{font-size:10px;fill:var(--det)}
+.el-llm{font-size:10px;fill:var(--llm)}
+.note{font-size:11px;fill:var(--fg-muted)}
+.note-blk{font-size:11px;fill:var(--blk)}
+.dot{fill:var(--fg-muted)}
+.mk{fill:var(--fg-muted)} .mk-det{fill:var(--det)} .mk-llm{fill:var(--llm)} .mk-blk{fill:var(--blk)}
+
+/* ---------- tables ---------- */
+.tbl{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:13.5px}
+.tbl th{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--fg-muted);
+  text-align:left;padding:0 12px 9px 0;border-bottom:1px solid var(--fg);font-weight:600}
+.tbl td{padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top;
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.5}
+.tbl td.prose{font-family:"Source Serif 4",Georgia,serif;font-size:14.5px}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl th.num{text-align:right}
+
+.sev{display:flex;align-items:center;gap:10px}
+.sev-bar{height:7px;background:var(--det);border-radius:1px;flex:none}
+.sev-bar.weak{background:var(--fg-muted);opacity:.5}
+
+.matrix{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+.matrix th,.matrix td{border:1px solid var(--line);padding:11px 12px;text-align:left;
+  font-family:"IBM Plex Mono",monospace;line-height:1.45}
+.matrix thead th{background:var(--sunk);font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--fg-muted);font-weight:600}
+.matrix tbody th{background:var(--sunk);font-weight:500;font-size:11.5px;width:180px}
+.cell-hold{background:var(--det-wash);color:var(--det);font-weight:500}
+.cell-pass{background:transparent}
+.cell-raise{background:var(--llm-wash);color:var(--llm);font-weight:500}
+.yes{color:var(--hum);font-weight:600}
+.no{color:var(--blk)}
+
+.callout{border-left:3px solid var(--det);background:var(--surface);padding:16px 20px;
+  margin:26px 0;font-size:15.5px;line-height:1.55}
+.callout.warn{border-left-color:var(--blk)}
+.callout p{margin:0}
+.callout p + p{margin-top:10px}
+.callout .tag{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:7px}
+
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--fg-muted);line-height:1.7}
+
+@media (max-width:760px){
+  body{font-size:16px}
+  .wrap{padding:0 18px 80px}
+  .sechead{display:block}
+  .sechead .num{padding:0 0 6px}
+  .legend div{border-right:none;border-bottom:1px solid var(--line)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="header-row">
-        <div class="pulse-dot"></div>
-        <h1>🛡️ MerchantShield Architecture</h1>
-      </div>
-      <p class="subtitle">AI-Driven Merchant Onboarding Fraud Detection • Razorpay Buildathon</p>
-    </div>
+<div class="wrap">
 
-    <!-- Main Diagram -->
-    <div class="diagram-container">
-      <svg viewBox="0 0 1100 780">
-        <!-- Definitions -->
+<header>
+  <p class="kicker">Architecture reference &nbsp;·&nbsp; Razorpay AI Buildathon &nbsp;·&nbsp; synthetic demonstration</p>
+  <h1>MerchantShield</h1>
+  <p class="standfirst">A merchant-onboarding ring investigator built so that <em>deterministic code owns the number and the action</em>, one caged LLM explains the evidence, and a named human makes every consequential call.</p>
+  <div class="meta">
+    <span>~11,850 LOC Python</span>
+    <span>FastAPI :8000 · Streamlit :8501</span>
+    <span>LangGraph · scikit-learn · networkx · SQLAlchemy</span>
+    <span>104-application frozen demo world</span>
+  </div>
+
+  <div class="legend">
+    <div class="l-det"><b>Deterministic</b><span>Rules, graph, fitted models, routing policy, citation validation, persistence. Owns every number.</span></div>
+    <div class="l-llm"><b>Model-generated</b><span>The bounded investigator. Appears exactly once in the whole system.</span></div>
+    <div class="l-hum"><b>Human</b><span>The reviewer. The only actor permitted to approve onboarding.</span></div>
+    <div class="l-blk"><b>Refused</b><span>Paths the architecture forbids: autonomous rejection, ungrounded narrative, unapproved hand-off.</span></div>
+  </div>
+  <p class="legend-note">This colour encoding is the argument of the whole document. It repeats in every figure below.</p>
+</header>
+
+<!-- ============================== 0 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">00</span>
+    <div>
+      <h2>The whole system on one page</h2>
+      <p>Five layers. An application enters at the top and can only leave through a person.</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <p>MerchantShield answers one narrow question: are these merchant applications better explained by a coordinated ring, or by a legitimate shared arrangement — an accountant filing for clients, a franchise, a coworking floor, a family business, a shared kiosk?</p>
+    <p>The answer is never a verdict. It is a case: a scored candidate group, a set of auditable evidence edges, a written explanation whose every citation was mechanically checked, and a queue position in front of a named reviewer.</p>
+  </div>
+
+  <figure>
+    <div class="well">
+      <svg viewBox="0 0 1120 1080" style="min-width:1120px" role="img" aria-label="Five-layer map of MerchantShield: ingress, evidence graph, routed sparse mixture of experts, LangGraph workflow with a bounded investigator and citation validator, and custody with a case store, human reviewer and onboarding gateway.">
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
-          </marker>
-          <marker id="arrowhead-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
-          </marker>
-          <marker id="arrowhead-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
-          </marker>
-          <marker id="arrowhead-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
-          </marker>
-          <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
-          </marker>
-          <marker id="arrowhead-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c" />
-          </marker>
-          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
-          </pattern>
+          <marker id="f1a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk"/></marker>
+          <marker id="f1d" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk-det"/></marker>
+          <marker id="f1l" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk-llm"/></marker>
         </defs>
 
-        <!-- Background Grid -->
-        <rect width="100%" height="100%" fill="url(#grid)" />
+        <!-- bands -->
+        <rect class="band" x="16" y="40"  width="1088" height="110"/>
+        <rect class="band" x="16" y="184" width="1088" height="134"/>
+        <rect class="band" x="16" y="352" width="1088" height="232"/>
+        <rect class="band" x="16" y="610" width="1088" height="238"/>
+        <rect class="band" x="16" y="882" width="1088" height="168"/>
 
-        <!-- ================================================================= -->
-        <!-- LAYER 1: INGESTION LAYER -->
-        <!-- ================================================================= -->
-        
-        <!-- Merchant Application (External) -->
-        <rect x="30" y="80" width="140" height="80" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="30" y="80" width="140" height="80" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
-        <text x="100" y="105" fill="white" font-size="11" font-weight="600" text-anchor="middle">Merchant</text>
-        <text x="100" y="120" fill="white" font-size="11" font-weight="600" text-anchor="middle">Application</text>
-        <text x="100" y="140" fill="#94a3b8" font-size="9" text-anchor="middle">Form + Documents</text>
+        <text class="railn" x="32" y="64">01</text><text class="rail" x="32" y="80">INGRESS</text>
+        <text class="railn" x="32" y="208">02</text><text class="rail" x="32" y="224">EVIDENCE</text>
+        <text class="railn" x="32" y="376">03</text><text class="rail" x="32" y="392">ROUTING</text>
+        <text class="railn" x="32" y="642">04</text><text class="rail" x="32" y="658">WORKFLOW</text>
+        <text class="railn" x="32" y="906">05</text><text class="rail" x="32" y="922">CUSTODY</text>
 
-        <!-- Document Uploads -->
-        <rect x="30" y="200" width="140" height="100" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="30" y="200" width="140" height="100" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
-        <text x="100" y="225" fill="white" font-size="11" font-weight="600" text-anchor="middle">KYC Documents</text>
-        <text x="100" y="245" fill="#94a3b8" font-size="8" text-anchor="middle">• PAN Card</text>
-        <text x="100" y="258" fill="#94a3b8" font-size="8" text-anchor="middle">• Aadhaar</text>
-        <text x="100" y="271" fill="#94a3b8" font-size="8" text-anchor="middle">• GST Certificate</text>
-        <text x="100" y="284" fill="#94a3b8" font-size="8" text-anchor="middle">• Bank Statement</text>
+        <!-- ---- band 1 ---- -->
+        <rect class="n" x="124" y="62" width="308" height="76" rx="2"/>
+        <text class="ttl" x="138" y="86">Frozen demo population</text>
+        <text class="sub" x="138" y="105">104 synthetic applications</text>
+        <text class="sub" x="138" y="123">synthetic_merchants.jsonl · seed 20250904</text>
 
-        <!-- Arrow: Application to API -->
-        <line x1="170" y1="120" x2="238" y2="120" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
-        <text x="204" y="112" fill="#94a3b8" font-size="8" text-anchor="middle">POST</text>
+        <rect class="n" x="456" y="62" width="308" height="76" rx="2"/>
+        <text class="ttl" x="470" y="86">Live merchant check</text>
+        <text class="sub" x="470" y="105">pasted or uploaded CSV, 8 columns</text>
+        <text class="sub" x="470" y="123">≤ 1 MB · ≤ 100 rows · never persisted</text>
 
-        <!-- Arrow: Documents to API -->
-        <line x1="170" y1="250" x2="238" y2="250" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
-        <text x="204" y="242" fill="#94a3b8" font-size="8" text-anchor="middle">multipart</text>
+        <rect class="n" x="788" y="62" width="308" height="76" rx="2"/>
+        <text class="ttl" x="802" y="86">Rehearsed scenarios</text>
+        <text class="sub" x="802" y="105">7 frozen demonstration cases</text>
+        <text class="sub" x="802" y="123">incl. a deliberate fabricated-citation trap</text>
 
-        <!-- ================================================================= -->
-        <!-- API GATEWAY -->
-        <!-- ================================================================= -->
-        
-        <!-- FastAPI Backend -->
-        <rect x="240" y="60" width="160" height="240" rx="8" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="240" y="60" width="160" height="240" rx="8" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
-        <text x="320" y="85" fill="white" font-size="12" font-weight="600" text-anchor="middle">MerchantShield API</text>
-        <text x="320" y="102" fill="#94a3b8" font-size="9" text-anchor="middle">FastAPI :8000</text>
-        
-        <line x1="255" y1="115" x2="385" y2="115" stroke="#1e293b" stroke-width="1"/>
-        
-        <text x="320" y="135" fill="#34d399" font-size="9" text-anchor="middle">/api/v1/merchants/assess</text>
-        <text x="320" y="155" fill="#94a3b8" font-size="8" text-anchor="middle">Risk Assessment Endpoint</text>
-        
-        <text x="320" y="180" fill="#34d399" font-size="9" text-anchor="middle">/api/v1/merchants</text>
-        <text x="320" y="200" fill="#94a3b8" font-size="8" text-anchor="middle">CRUD Operations</text>
-        
-        <text x="320" y="225" fill="#34d399" font-size="9" text-anchor="middle">/api/v1/merchants/{id}/review</text>
-        <text x="320" y="245" fill="#94a3b8" font-size="8" text-anchor="middle">Manual Review</text>
-        
-        <text x="320" y="280" fill="#34d399" font-size="8" text-anchor="middle">Pydantic Validation</text>
+        <path class="ed" d="M278 138 V162 H942 M610 138 V162"/>
+        <path class="ed" d="M610 162 V178" marker-end="url(#f1a)"/>
+        <text class="el" x="626" y="157">every path builds the same MerchantApplication objects</text>
 
-        <!-- ================================================================= -->
-        <!-- LAYER 2: ANALYSIS LAYER (Parallel Processing) -->
-        <!-- ================================================================= -->
-        
-        <!-- Analysis Layer Boundary -->
-        <rect x="430" y="30" width="450" height="360" rx="12" fill="rgba(251, 146, 60, 0.05)" stroke="#fb923c" stroke-width="1" stroke-dasharray="8,4"/>
-        <text x="445" y="50" fill="#fb923c" font-size="10" font-weight="600">Analysis Layer (Parallel Processing)</text>
+        <!-- ---- band 2 ---- -->
+        <rect class="n n-det" x="124" y="202" width="280" height="98" rx="2"/>
+        <text class="ttl" x="138" y="226">Extract linkage keys</text>
+        <text class="sub" x="138" y="246">bank_account · owner_pan · device</text>
+        <text class="sub" x="138" y="264">address_hash · ip · phone · email</text>
+        <text class="sub-det" x="138" y="284">SHA-256 → 16 hex; raw values dropped</text>
 
-        <!-- Arrow: API to Analysis Layer -->
-        <line x1="400" y1="180" x2="448" y2="180" stroke="#34d399" stroke-width="2" marker-end="url(#arrowhead-emerald)"/>
+        <rect class="n n-det" x="470" y="202" width="280" height="98" rx="2"/>
+        <text class="ttl" x="484" y="226">Invert and weight</text>
+        <text class="sub" x="484" y="246">value → member ids, frequency 2…50</text>
+        <text class="sub" x="484" y="264">severity ÷ frequency discount</text>
+        <text class="sub-det" x="484" y="284">drop effective weight &lt; 0.10</text>
 
-        <!-- Split arrows to each module -->
-        <path d="M 460 180 L 480 180 Q 500 180 500 120 L 500 95" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
-        <path d="M 460 180 L 510 180" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
-        <path d="M 460 180 L 480 180 Q 500 180 500 250 L 500 275" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
+        <rect class="n n-det" x="816" y="202" width="280" height="98" rx="2"/>
+        <text class="ttl" x="830" y="226">Components</text>
+        <text class="sub" x="830" y="246">noisy-OR pair strength ≥ 0.35</text>
+        <text class="sub" x="830" y="264">connected components (networkx)</text>
+        <text class="sub-det" x="830" y="284">RingCandidate + 16 features</text>
 
-        <!-- Module 1: Document Intelligence -->
-        <rect x="450" y="60" width="200" height="90" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="450" y="60" width="200" height="90" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
-        <text x="550" y="82" fill="white" font-size="11" font-weight="600" text-anchor="middle">Document Intelligence</text>
-        <text x="550" y="100" fill="#94a3b8" font-size="8" text-anchor="middle">Claude Vision API</text>
-        <line x1="465" y1="108" x2="635" y2="108" stroke="#1e293b" stroke-width="1"/>
-        <text x="550" y="122" fill="#94a3b8" font-size="8" text-anchor="middle">• Tampering Detection</text>
-        <text x="550" y="135" fill="#94a3b8" font-size="8" text-anchor="middle">• Template Forgery Check</text>
-        <text x="550" y="148" fill="#fb7185" font-size="7" text-anchor="middle">Returns: doc_risk_score</text>
+        <path class="ed" d="M404 251 H464" marker-end="url(#f1a)"/>
+        <text class="el" x="434" y="243" text-anchor="middle">edges</text>
+        <path class="ed" d="M750 251 H810" marker-end="url(#f1a)"/>
+        <text class="el" x="780" y="243" text-anchor="middle">pairs</text>
 
-        <!-- Module 2: Synthetic Identity Detection -->
-        <rect x="520" y="160" width="200" height="90" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="520" y="160" width="200" height="90" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-        <text x="620" y="182" fill="white" font-size="11" font-weight="600" text-anchor="middle">Synthetic Identity</text>
-        <text x="620" y="198" fill="#94a3b8" font-size="8" text-anchor="middle">Pattern Analysis</text>
-        <line x1="535" y1="206" x2="705" y2="206" stroke="#1e293b" stroke-width="1"/>
-        <text x="620" y="220" fill="#94a3b8" font-size="8" text-anchor="middle">• Email/Phone Validation</text>
-        <text x="620" y="233" fill="#94a3b8" font-size="8" text-anchor="middle">• PAN-Name Consistency</text>
-        <text x="620" y="246" fill="#a78bfa" font-size="7" text-anchor="middle">Returns: synthetic_score</text>
+        <path class="ed" d="M610 300 V332 H166 V456" marker-end="url(#f1a)"/>
+        <text class="el" x="596" y="326" text-anchor="end">RingCandidate + its member applications</text>
 
-        <!-- Module 3: Application Clustering -->
-        <rect x="450" y="275" width="200" height="100" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="450" y="275" width="200" height="100" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
-        <text x="550" y="297" fill="white" font-size="11" font-weight="600" text-anchor="middle">Application Clustering</text>
-        <text x="550" y="313" fill="#94a3b8" font-size="8" text-anchor="middle">Graph-Based Linkage</text>
-        <line x1="465" y1="321" x2="635" y2="321" stroke="#1e293b" stroke-width="1"/>
-        <text x="550" y="335" fill="#94a3b8" font-size="8" text-anchor="middle">• IP/Device Fingerprint</text>
-        <text x="550" y="348" fill="#94a3b8" font-size="8" text-anchor="middle">• Shared Bank Accounts</text>
-        <text x="550" y="361" fill="#94a3b8" font-size="8" text-anchor="middle">• Address Similarity</text>
-        <text x="550" y="373" fill="#22d3ee" font-size="7" text-anchor="middle">Returns: cluster_info + risk</text>
+        <!-- ---- band 3 ---- -->
+        <circle class="dot" cx="166" cy="470" r="6"/>
+        <rect class="n n-det" x="200" y="412" width="220" height="52" rx="2"/>
+        <text class="ttl" x="214" y="434">Rules expert</text>
+        <text class="sub" x="214" y="452">identity-rules-v1 · cheap</text>
 
-        <!-- Risk Scorer (Fusion) -->
-        <rect x="730" y="150" width="140" height="120" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="730" y="150" width="140" height="120" rx="6" fill="rgba(251, 191, 36, 0.3)" stroke="#fbbf24" stroke-width="2"/>
-        <text x="800" y="175" fill="white" font-size="12" font-weight="700" text-anchor="middle">Risk Scorer</text>
-        <text x="800" y="193" fill="#fbbf24" font-size="9" text-anchor="middle">Signal Fusion</text>
-        <line x1="745" y1="203" x2="855" y2="203" stroke="#1e293b" stroke-width="1"/>
-        <text x="800" y="220" fill="#94a3b8" font-size="8" text-anchor="middle">Weighted Average</text>
-        <text x="800" y="235" fill="#94a3b8" font-size="8" text-anchor="middle">+ Signal Boost</text>
-        <text x="800" y="255" fill="#fbbf24" font-size="8" text-anchor="middle">→ final_risk_score</text>
+        <rect class="n n-det" x="200" y="476" width="220" height="52" rx="2"/>
+        <text class="ttl" x="214" y="498">Graph expert</text>
+        <text class="sub" x="214" y="516">graph-logistic-v1 · owns the score</text>
 
-        <!-- Arrows: Modules to Risk Scorer -->
-        <line x1="650" y1="105" x2="728" y2="175" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrowhead-rose)"/>
-        <line x1="720" y1="205" x2="728" y2="205" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead-violet)"/>
-        <line x1="650" y1="325" x2="728" y2="245" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
+        <path class="ed" d="M172 466 L196 444" marker-end="url(#f1a)"/>
+        <path class="ed" d="M172 474 L196 496" marker-end="url(#f1a)"/>
+        <path class="ed" d="M420 442 L446 464" marker-end="url(#f1a)"/>
+        <path class="ed" d="M420 498 L446 476" marker-end="url(#f1a)"/>
+        <circle class="dot" cx="452" cy="470" r="6"/>
 
-        <!-- ================================================================= -->
-        <!-- LAYER 3: DECISION LAYER -->
-        <!-- ================================================================= -->
+        <rect class="n n-det" x="500" y="444" width="200" height="52" rx="2"/>
+        <text class="ttl" x="600" y="466" text-anchor="middle">sparse gate</text>
+        <text class="sub" x="600" y="484" text-anchor="middle">conditional fan-out</text>
+        <path class="ed" d="M459 470 H494" marker-end="url(#f1a)"/>
 
-        <!-- Decision Engine -->
-        <rect x="730" y="310" width="140" height="70" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="730" y="310" width="140" height="70" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
-        <text x="800" y="335" fill="white" font-size="11" font-weight="600" text-anchor="middle">Decision Engine</text>
-        <text x="800" y="355" fill="#94a3b8" font-size="8" text-anchor="middle">Threshold Gates</text>
-        <text x="800" y="370" fill="#34d399" font-size="7" text-anchor="middle">&lt;0.25 approve | &gt;0.75 reject</text>
+        <rect class="n n-det n-dash" x="500" y="344" width="200" height="52" rx="2"/>
+        <text class="ttl" x="600" y="366" text-anchor="middle">Tabular expert</text>
+        <text class="sub" x="600" y="384" text-anchor="middle">second opinion, conditional</text>
+        <path class="ed-det ed-dash" d="M600 444 V402" marker-end="url(#f1d)"/>
+        <text class="el-det" x="612" y="424">escalate</text>
 
-        <!-- Arrow: Risk Scorer to Decision -->
-        <line x1="800" y1="270" x2="800" y2="308" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="n n-det" x="800" y="432" width="250" height="76" rx="2"/>
+        <text class="ttl" x="814" y="456">Deterministic policy</text>
+        <text class="sub" x="814" y="475">reason codes ⇒ permitted action</text>
+        <text class="sub-det" x="814" y="494">human_review | proceed_to_onboarding</text>
+        <path class="ed" d="M700 470 H794" marker-end="url(#f1a)"/>
+        <text class="el" x="747" y="462" text-anchor="middle">results</text>
+        <path class="ed-det ed-dash" d="M700 370 H890 V426" marker-end="url(#f1d)"/>
 
-        <!-- Decision Outputs -->
-        <!-- Approved -->
-        <rect x="650" y="420" width="90" height="45" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="650" y="420" width="90" height="45" rx="6" fill="rgba(6, 78, 59, 0.6)" stroke="#22c55e" stroke-width="2"/>
-        <text x="695" y="440" fill="#22c55e" font-size="10" font-weight="600" text-anchor="middle">APPROVED</text>
-        <text x="695" y="455" fill="#94a3b8" font-size="8" text-anchor="middle">Auto-activate</text>
+        <text class="note" x="200" y="550">always, in parallel · 2.0 s timeout each · a failed or timed-out expert becomes an explicit reason code, never a pass</text>
+        <text class="note" x="200" y="568">gate fires when: the graph expert is unavailable, or its score ∈ (0.20, 0.75), or |graph − rules| ≥ 0.40</text>
 
-        <!-- Under Review -->
-        <rect x="755" y="420" width="90" height="45" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="755" y="420" width="90" height="45" rx="6" fill="rgba(251, 191, 36, 0.4)" stroke="#f59e0b" stroke-width="2"/>
-        <text x="800" y="440" fill="#f59e0b" font-size="10" font-weight="600" text-anchor="middle">REVIEW</text>
-        <text x="800" y="455" fill="#94a3b8" font-size="8" text-anchor="middle">Manual check</text>
+        <path class="ed" d="M925 508 V600 H229 V640" marker-end="url(#f1a)"/>
+        <text class="el" x="909" y="594" text-anchor="end">CandidateAssessment, frozen into CaseState</text>
 
-        <!-- Rejected -->
-        <rect x="860" y="420" width="90" height="45" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="860" y="420" width="90" height="45" rx="6" fill="rgba(239, 68, 68, 0.4)" stroke="#ef4444" stroke-width="2"/>
-        <text x="905" y="440" fill="#ef4444" font-size="10" font-weight="600" text-anchor="middle">REJECTED</text>
-        <text x="905" y="455" fill="#94a3b8" font-size="8" text-anchor="middle">Auto-block</text>
+        <!-- ---- band 4 ---- -->
+        <rect class="n n-det" x="124" y="644" width="210" height="54" rx="2"/>
+        <text class="ttl" x="229" y="668" text-anchor="middle">assess</text>
+        <text class="sub" x="229" y="686" text-anchor="middle">wraps the routed MoE</text>
 
-        <!-- Arrows: Decision to Outputs -->
-        <line x1="760" y1="380" x2="695" y2="418" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <line x1="800" y1="380" x2="800" y2="418" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-        <line x1="840" y1="380" x2="905" y2="418" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <rect class="n n-det" x="434" y="644" width="210" height="54" rx="2"/>
+        <text class="ttl" x="539" y="668" text-anchor="middle">investigate</text>
+        <text class="sub" x="539" y="686" text-anchor="middle">explanation, not scoring</text>
 
-        <!-- ================================================================= -->
-        <!-- DATABASE LAYER -->
-        <!-- ================================================================= -->
+        <rect class="n n-det" x="744" y="644" width="210" height="54" rx="2"/>
+        <text class="ttl" x="849" y="668" text-anchor="middle">finalize</text>
+        <text class="sub" x="849" y="686" text-anchor="middle">applies the policy again</text>
 
-        <!-- SQLite Database -->
-        <rect x="240" y="350" width="160" height="120" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="240" y="350" width="160" height="120" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-        <text x="320" y="375" fill="white" font-size="11" font-weight="600" text-anchor="middle">SQLite Database</text>
-        <text x="320" y="393" fill="#94a3b8" font-size="9" text-anchor="middle">SQLAlchemy ORM</text>
-        <line x1="255" y1="403" x2="385" y2="403" stroke="#1e293b" stroke-width="1"/>
-        <text x="320" y="420" fill="#94a3b8" font-size="8" text-anchor="middle">• merchants</text>
-        <text x="320" y="433" fill="#94a3b8" font-size="8" text-anchor="middle">• documents</text>
-        <text x="320" y="446" fill="#94a3b8" font-size="8" text-anchor="middle">• risk_assessments</text>
-        <text x="320" y="459" fill="#94a3b8" font-size="8" text-anchor="middle">• application_clusters</text>
+        <circle class="n" cx="1020" cy="671" r="15"/>
+        <text class="sub" x="1020" y="675" text-anchor="middle">END</text>
 
-        <!-- Arrow: API to Database -->
-        <line x1="320" y1="300" x2="320" y2="348" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead-violet)"/>
-        <text x="335" y="325" fill="#94a3b8" font-size="8">CRUD</text>
+        <path class="ed" d="M334 671 H428" marker-end="url(#f1a)"/>
+        <text class="el" x="381" y="663" text-anchor="middle">if flagged</text>
+        <path class="ed" d="M644 671 H738" marker-end="url(#f1a)"/>
+        <text class="el" x="691" y="663" text-anchor="middle">always</text>
+        <path class="ed" d="M954 671 H999" marker-end="url(#f1a)"/>
 
-        <!-- Arrow: Clustering to Database -->
-        <path d="M 450 340 L 420 340 Q 400 340 400 360 L 400 410" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
-        <text x="415" y="385" fill="#94a3b8" font-size="7">cluster</text>
-        <text x="415" y="395" fill="#94a3b8" font-size="7">lookup</text>
+        <path class="ed" d="M229 644 V628 H849 V638" marker-end="url(#f1a)"/>
+        <text class="el" x="539" y="622" text-anchor="middle">no reason code fired</text>
 
-        <!-- ================================================================= -->
-        <!-- LLM LAYER -->
-        <!-- ================================================================= -->
+        <rect class="n n-llm" x="374" y="740" width="330" height="70" rx="2"/>
+        <text class="ttl" x="388" y="762">Bounded investigator — the only LLM</text>
+        <text class="sub" x="388" y="781">6 read-only tools · ≤5 steps · ≤6 calls · ≤15 s</text>
+        <text class="sub" x="388" y="799">may recommend or abstain; cannot score or decide</text>
 
-        <!-- Claude API -->
-        <rect x="700" y="60" width="130" height="70" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="700" y="60" width="130" height="70" rx="6" fill="rgba(251, 146, 60, 0.3)" stroke="#fb923c" stroke-width="1.5"/>
-        <text x="765" y="85" fill="white" font-size="11" font-weight="600" text-anchor="middle">Claude API</text>
-        <text x="765" y="103" fill="#94a3b8" font-size="8" text-anchor="middle">Anthropic</text>
-        <text x="765" y="118" fill="#fb923c" font-size="8" text-anchor="middle">Vision + Text</text>
+        <rect class="n n-det" x="744" y="740" width="260" height="70" rx="2"/>
+        <text class="ttl" x="758" y="762">Citation validator</text>
+        <text class="sub" x="758" y="781">plain code, no model involved</text>
+        <text class="sub" x="758" y="799">unknown or undisclosed ID ⇒ discard</text>
 
-        <!-- Arrow: Doc Intelligence to Claude -->
-        <line x1="650" y1="90" x2="698" y2="90" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowhead-rose)"/>
+        <path class="ed-llm" d="M539 698 V734" marker-end="url(#f1l)"/>
+        <text class="el-llm" x="551" y="722">brief + tools</text>
+        <path class="ed-llm" d="M704 775 H738" marker-end="url(#f1l)"/>
+        <path class="ed-det" d="M849 740 V704" marker-end="url(#f1d)"/>
+        <text class="el-det" x="861" y="722">grounded, or discarded</text>
 
-        <!-- Arrow: Risk Scorer to Claude (for explanations) -->
-        <line x1="765" y1="130" x2="765" y2="148" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowhead)"/>
-        <text x="775" y="142" fill="#94a3b8" font-size="7">explain</text>
+        <text class="note" x="124" y="834">An investigator recommendation may raise a case to human review. It can never lower one, and it never produces or alters the risk score.</text>
 
-        <!-- ================================================================= -->
-        <!-- FRONTEND -->
-        <!-- ================================================================= -->
+        <path class="ed" d="M849 848 V866 H269 V904" marker-end="url(#f1a)"/>
+        <text class="el" x="833" y="860" text-anchor="end">CaseDecision + append-only audit events</text>
 
-        <!-- Review Dashboard -->
-        <rect x="30" y="350" width="180" height="120" rx="8" fill="#0f172a" stroke="#0f172a" stroke-width="1"/>
-        <rect x="30" y="350" width="180" height="120" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
-        <text x="120" y="375" fill="white" font-size="12" font-weight="600" text-anchor="middle">Review Dashboard</text>
-        <text x="120" y="393" fill="#94a3b8" font-size="9" text-anchor="middle">HTML/CSS/JS</text>
-        <line x1="45" y1="403" x2="195" y2="403" stroke="#1e293b" stroke-width="1"/>
-        <text x="120" y="420" fill="#94a3b8" font-size="8" text-anchor="middle">• Application List</text>
-        <text x="120" y="433" fill="#94a3b8" font-size="8" text-anchor="middle">• Risk Breakdown</text>
-        <text x="120" y="446" fill="#94a3b8" font-size="8" text-anchor="middle">• Manual Review UI</text>
-        <text x="120" y="459" fill="#22d3ee" font-size="8" text-anchor="middle">localhost:8000</text>
+        <!-- ---- band 5 ---- -->
+        <rect class="n n-det" x="124" y="908" width="290" height="96" rx="2"/>
+        <text class="ttl" x="138" y="930">Case store — SQLite</text>
+        <text class="sub" x="138" y="950">append-only case_events</text>
+        <text class="sub" x="138" y="969">optimistic expected_version check</text>
+        <text class="sub-det" x="138" y="988">automated decision never rewritten</text>
 
-        <!-- Arrow: Dashboard to API -->
-        <path d="M 120 350 L 120 320 Q 120 300 140 300 L 238 300" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
-        <text x="180" y="292" fill="#94a3b8" font-size="8">REST</text>
+        <rect class="n n-hum" x="454" y="908" width="290" height="96" rx="2"/>
+        <text class="ttl" x="468" y="930">Human reviewer</text>
+        <text class="sub" x="468" y="950">claim · request info · resolve</text>
+        <text class="sub" x="468" y="969">approve · keep on hold · escalate</text>
+        <text class="sub" x="468" y="988">the only actor that can approve</text>
 
-        <!-- ================================================================= -->
-        <!-- DATA FLOW ANNOTATIONS -->
-        <!-- ================================================================= -->
+        <rect class="n" x="784" y="908" width="312" height="96" rx="2"/>
+        <text class="ttl" x="798" y="930">Onboarding gateway</text>
+        <text class="sub" x="798" y="950">SIMULATED by default</text>
+        <text class="sub" x="798" y="969">RAZORPAY_TEST only if fully configured</text>
+        <text class="sub" x="798" y="988">no production mode, no silent fallback</text>
 
-        <!-- Flow Step Labels -->
-        <circle cx="185" cy="120" r="12" fill="#34d399"/>
-        <text x="185" y="124" fill="black" font-size="10" font-weight="700" text-anchor="middle">1</text>
+        <path class="ed" d="M414 956 H448" marker-end="url(#f1a)"/>
+        <text class="el" x="431" y="948" text-anchor="middle">queue</text>
+        <path class="ed" d="M744 956 H778" marker-end="url(#f1a)"/>
+        <text class="el" x="761" y="948" text-anchor="middle">approved</text>
 
-        <circle cx="420" cy="180" r="12" fill="#34d399"/>
-        <text x="420" y="184" fill="black" font-size="10" font-weight="700" text-anchor="middle">2</text>
-
-        <circle cx="680" cy="205" r="12" fill="#34d399"/>
-        <text x="680" y="209" fill="black" font-size="10" font-weight="700" text-anchor="middle">3</text>
-
-        <circle cx="800" cy="290" r="12" fill="#34d399"/>
-        <text x="800" y="294" fill="black" font-size="10" font-weight="700" text-anchor="middle">4</text>
-
-        <circle cx="800" cy="400" r="12" fill="#34d399"/>
-        <text x="800" y="404" fill="black" font-size="10" font-weight="700" text-anchor="middle">5</text>
-
-        <!-- ================================================================= -->
-        <!-- LEGEND -->
-        <!-- ================================================================= -->
-        <text x="920" y="520" fill="white" font-size="10" font-weight="600">Legend</text>
-        
-        <rect x="920" y="532" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
-        <text x="942" y="540" fill="#94a3b8" font-size="8">Backend/API</text>
-        
-        <rect x="920" y="548" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
-        <text x="942" y="556" fill="#94a3b8" font-size="8">Document AI</text>
-        
-        <rect x="920" y="564" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
-        <text x="942" y="572" fill="#94a3b8" font-size="8">Identity/Database</text>
-        
-        <rect x="920" y="580" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
-        <text x="942" y="588" fill="#94a3b8" font-size="8">Clustering/Frontend</text>
-        
-        <rect x="920" y="596" width="16" height="10" rx="2" fill="rgba(251, 191, 36, 0.3)" stroke="#fbbf24" stroke-width="1"/>
-        <text x="942" y="604" fill="#94a3b8" font-size="8">Risk Fusion</text>
-        
-        <rect x="920" y="612" width="16" height="10" rx="2" fill="rgba(251, 146, 60, 0.3)" stroke="#fb923c" stroke-width="1"/>
-        <text x="942" y="620" fill="#94a3b8" font-size="8">External LLM</text>
-
-        <!-- Flow Steps Legend -->
-        <text x="920" y="650" fill="white" font-size="10" font-weight="600">Data Flow</text>
-        <circle cx="928" cy="665" r="8" fill="#34d399"/>
-        <text x="928" y="669" fill="black" font-size="8" font-weight="700" text-anchor="middle">1</text>
-        <text x="942" y="669" fill="#94a3b8" font-size="8">Ingest Application</text>
-        
-        <circle cx="928" cy="683" r="8" fill="#34d399"/>
-        <text x="928" y="687" fill="black" font-size="8" font-weight="700" text-anchor="middle">2</text>
-        <text x="942" y="687" fill="#94a3b8" font-size="8">Parallel Analysis</text>
-        
-        <circle cx="928" cy="701" r="8" fill="#34d399"/>
-        <text x="928" y="705" fill="black" font-size="8" font-weight="700" text-anchor="middle">3</text>
-        <text x="942" y="705" fill="#94a3b8" font-size="8">Fuse Signals</text>
-        
-        <circle cx="928" cy="719" r="8" fill="#34d399"/>
-        <text x="928" y="723" fill="black" font-size="8" font-weight="700" text-anchor="middle">4</text>
-        <text x="942" y="723" fill="#94a3b8" font-size="8">Score & Decide</text>
-        
-        <circle cx="928" cy="737" r="8" fill="#34d399"/>
-        <text x="928" y="741" fill="black" font-size="8" font-weight="700" text-anchor="middle">5</text>
-        <text x="942" y="741" fill="#94a3b8" font-size="8">Route Decision</text>
-
-        <!-- Title Box -->
-        <rect x="30" y="520" width="400" height="80" rx="8" fill="rgba(15, 23, 42, 0.8)" stroke="#1e293b" stroke-width="1"/>
-        <text x="50" y="545" fill="white" font-size="11" font-weight="600">Pre-Activation Gate</text>
-        <text x="50" y="565" fill="#94a3b8" font-size="9">Every merchant application passes through MerchantShield</text>
-        <text x="50" y="582" fill="#94a3b8" font-size="9">before activation. ~2-5s latency per assessment.</text>
-
+        <text class="note-blk" x="124" y="1032">✕  Nothing upstream of a recorded human approval can reach the gateway — the router, the policy and the investigator hold no reference to it at all.</text>
       </svg>
     </div>
+    <figcaption><b>Figure 1 — the end-to-end map.</b> Read top to bottom. Note how little of the picture is amber: one box, in one layer, with a deterministic validator downstream of it and a deterministic policy on both sides. The dashed slate box is the only expert that is not always run.</figcaption>
+  </figure>
+</section>
 
-    <!-- Info Cards -->
-    <div class="cards">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-dot rose"></div>
-          <h3>Document Intelligence</h3>
-        </div>
-        <ul>
-          <li>• Claude Vision API for document analysis</li>
-          <li>• Tampering detection (editing artifacts, fonts)</li>
-          <li>• Template forgery recognition</li>
-          <li>• Field extraction & cross-validation</li>
-          <li>• Mismatch detection (claimed vs extracted)</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-dot violet"></div>
-          <h3>Synthetic Identity Detection</h3>
-        </div>
-        <ul>
-          <li>• Email domain reputation check</li>
-          <li>• Phone number pattern analysis</li>
-          <li>• PAN-Name consistency validation</li>
-          <li>• Address completeness scoring</li>
-          <li>• Cross-field pattern detection</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-dot cyan"></div>
-          <h3>Application Clustering</h3>
-        </div>
-        <ul>
-          <li>• IP address linkage</li>
-          <li>• Device fingerprint matching</li>
-          <li>• Shared bank account detection</li>
-          <li>• Address similarity clustering</li>
-          <li>• Fraud ring exposure (3+ linked apps)</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-dot amber"></div>
-          <h3>Risk Fusion & Decision</h3>
-        </div>
-        <ul>
-          <li>• Weighted signal aggregation</li>
-          <li>• Multi-signal boost for compounding risk</li>
-          <li>• Threshold-based auto-decision</li>
-          <li>• LLM-generated human explanations</li>
-          <li>• Auditable decision trail</li>
-        </ul>
-      </div>
+<!-- ============================== 1 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">01</span>
+    <div>
+      <h2>Ingress</h2>
+      <p>Three entry points, one internal representation, no privileged path.</p>
     </div>
-
-    <!-- Footer -->
-    <p class="footer">
-      MerchantShield • Razorpay AI Buildathon 2026 • Lohith
-    </p>
   </div>
+  <div class="col">
+    <p>The review desk runs against a frozen population of 104 synthetic applications, generated from a fixed seed and split by whole connected component so a candidate a reviewer opens was never in the training partition of the model scoring it.</p>
+    <p>The <b>live merchant check</b> accepts pasted or uploaded CSV rows and runs them through the same evidence graph, the same router and the same investigator. It is deliberately amnesiac: nothing is fitted, persisted, approved, rejected, or sent to a gateway, and the batch is bounded at 1 MB and 100 rows. Its purpose is to show the real machinery on new input, not to become a second, weaker decision path.</p>
+    <p>The seven rehearsed scenarios include two that exist to fail on purpose — a shared-kiosk false positive that a reviewer must clear, and a fabricated-citation case that the grounding validator must catch.</p>
+  </div>
+</section>
+
+<!-- ============================== 2 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">02</span>
+    <div>
+      <h2>The evidence layer</h2>
+      <p>Raw identifiers become hashed, weighted, individually addressable edges — and then stop.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>Each application in a ring looks fine alone. The ring becomes visible only through what its members involuntarily share: the settlement account the money lands in, the device the forms were typed on, the address block, the IP, the phone batch.</p>
+    <p>Every shared value is hashed before it is used, so the graph, the models, the tools and the investigator all reason over <code>a9f2c1…</code> rather than an account number. The hash is the join key <em>and</em> the privacy boundary — the same mechanism does both jobs, which is why it cannot be forgotten.</p>
+  </div>
+
+  <figure>
+    <div class="well">
+      <svg viewBox="0 0 1000 440" style="min-width:1000px" role="img" aria-label="Three merchant applications on the left are hashed at a privacy boundary, becoming a weighted three-node graph on the right whose edges carry severity weights, producing a RingCandidate that contains no raw identifier values.">
+        <defs>
+          <marker id="f2a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk"/></marker>
+        </defs>
+
+        <text class="rail" x="20" y="34">RAW APPLICATION</text>
+        <rect class="n" x="20" y="52" width="250" height="62" rx="2"/>
+        <text class="ttl" x="34" y="76">LIVE-801 Prime Mobile</text>
+        <text class="sub" x="34" y="96">9921678201 · device-demo-3321</text>
+
+        <rect class="n" x="20" y="132" width="250" height="62" rx="2"/>
+        <text class="ttl" x="34" y="156">LIVE-802 Skyline Retail</text>
+        <text class="sub" x="34" y="176">9921678201 · device-demo-3321</text>
+
+        <rect class="n" x="20" y="212" width="250" height="62" rx="2"/>
+        <text class="ttl" x="34" y="236">LIVE-803 Vertex Supply</text>
+        <text class="sub" x="34" y="256">9921678201 · device-b7f1</text>
+
+        <path class="ed" d="M270 83 H326" marker-end="url(#f2a)"/>
+        <path class="ed" d="M270 163 H326" marker-end="url(#f2a)"/>
+        <path class="ed" d="M270 243 H326" marker-end="url(#f2a)"/>
+
+        <line x1="340" y1="34" x2="340" y2="418" class="ed-blk"/>
+        <text class="note-blk" x="352" y="30">SHA-256("merchantshield:" + attribute + ":" + value)[:16]</text>
+        <text class="note-blk" x="352" y="434">raw account numbers, devices, addresses and PANs stop at this line</text>
+
+        <text class="rail" x="420" y="34">CANDIDATE GRAPH</text>
+        <circle class="n n-det" cx="470" cy="100" r="27"/>
+        <text class="sub" x="470" y="104" text-anchor="middle">801</text>
+        <circle class="n n-det" cx="470" cy="250" r="27"/>
+        <text class="sub" x="470" y="254" text-anchor="middle">802</text>
+        <circle class="n n-det" cx="740" cy="175" r="27"/>
+        <text class="sub" x="740" y="179" text-anchor="middle">803</text>
+
+        <line x1="470" y1="127" x2="470" y2="223" class="ed-det"/>
+        <line x1="493" y1="114" x2="717" y2="161" class="ed-det"/>
+        <line x1="493" y1="236" x2="717" y2="189" class="ed-det"/>
+
+        <text class="el-det" x="488" y="168">0.88 account + 0.72 device</text>
+        <text class="el-det" x="488" y="184">→ pair strength 0.966</text>
+        <text class="el-det" x="600" y="124" text-anchor="middle">0.88</text>
+        <text class="el-det" x="600" y="230" text-anchor="middle">0.88</text>
+
+        <rect class="n n-det" x="400" y="312" width="580" height="98" rx="2"/>
+        <text class="ttl" x="414" y="336">RingCandidate — candidate-c41f8b2e05d9</text>
+        <text class="sub" x="414" y="356">component size 3 · 4 evidence edges · density 1.00 · max pair strength 0.966</text>
+        <text class="sub" x="414" y="374">every edge carries its own evidence_id, severity, frequency and hashed value</text>
+        <text class="sub-det" x="414" y="394">this object is what the experts, the tools and the investigator actually see</text>
+        <path class="ed" d="M690 202 V306" marker-end="url(#f2a)"/>
+      </svg>
+    </div>
+    <figcaption><b>Figure 2 — construction and the privacy boundary.</b> Three applications sharing one settlement account, two of them also sharing a device. Pair strength combines a pair's attributes with noisy-OR, so corroboration compounds without any single weak signal being decisive. The resulting candidate object carries no raw identifier value.</figcaption>
+  </figure>
+
+  <h3>Attribute severities, and why they are not equal</h3>
+  <div class="col">
+    <p>A shared settlement account is close to conclusive: it is where the money actually ends up. A shared IP could be a coworking floor, a café, or carrier-grade NAT. The weights encode that asymmetry directly rather than burying it in a fitted parameter.</p>
+  </div>
+  <table class="tbl">
+    <thead><tr><th>Shared attribute</th><th class="num">Severity</th><th style="width:38%">Weight</th><th>What it plausibly means on its own</th></tr></thead>
+    <tbody>
+      <tr><td>bank_account</td><td class="num">0.88</td><td><div class="sev"><span class="sev-bar" style="width:88%"></span></div></td><td class="prose">Same destination for settled funds</td></tr>
+      <tr><td>owner_pan</td><td class="num">0.85</td><td><div class="sev"><span class="sev-bar" style="width:85%"></span></div></td><td class="prose">Literally the same declared owner</td></tr>
+      <tr><td>device_fingerprint</td><td class="num">0.72</td><td><div class="sev"><span class="sev-bar" style="width:72%"></span></div></td><td class="prose">Typed on one machine — or one shared kiosk</td></tr>
+      <tr><td>address_hash</td><td class="num">0.55</td><td><div class="sev"><span class="sev-bar" style="width:55%"></span></div></td><td class="prose">Shared premises, including legitimate coworking</td></tr>
+      <tr><td>ip_address</td><td class="num">0.38</td><td><div class="sev"><span class="sev-bar weak" style="width:38%"></span></div></td><td class="prose">Weak: shared office, café, carrier NAT</td></tr>
+      <tr><td>phone_series</td><td class="num">0.30</td><td><div class="sev"><span class="sev-bar weak" style="width:30%"></span></div></td><td class="prose">Weak: one batch of SIMs, or coincidence</td></tr>
+      <tr><td>email_domain</td><td class="num">0.20</td><td><div class="sev"><span class="sev-bar weak" style="width:20%"></span></div></td><td class="prose">Very weak on its own</td></tr>
+    </tbody>
+  </table>
+  <div class="col">
+    <p style="margin-top:20px">Two further guards keep weak-but-popular signals from dominating. An attribute value shared by more than 50 applications is dropped entirely — that is infrastructure, not a ring. And a value shared by more than two applications has its severity divided by a frequency discount, gently for strong attributes and by <code>√(n−1)</code> for weak ones, so a public email domain connecting nine merchants does not become evidence merely by connecting nine merchants.</p>
+  </div>
+</section>
+
+<!-- ============================== 3 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">03</span>
+    <div>
+      <h2>The routed sparse mixture of experts</h2>
+      <p>A system-level MoE: ordinary components behind one contract, with a deterministic gate deciding who runs.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>This is not a trained neural MoE and it is not several chatbots debating. Three ordinary experts implement one <code>evaluate()</code> contract; a deterministic router decides which of them runs and what their disagreement means.</p>
+    <p>The rules expert and the graph expert always run, concurrently, each behind a 2-second timeout and a per-expert exception boundary. A crashed or slow expert returns an explicit <code>FAILED</code> result with an error code, which becomes a reason to review — never a silent zero. <b>Missing evidence is never clean evidence</b> is enforced here, in the failure path, not in a comment.</p>
+    <p>The tabular expert is the sparse part: it runs only under three named conditions.</p>
+  </div>
+
+  <figure>
+    <div class="well">
+      <svg viewBox="0 0 940 310" style="min-width:940px" role="img" aria-label="A zero-to-one number line for the graph risk score, showing the review threshold at 0.25 and the uncertainty band from 0.20 to 0.75 within which the conditional tabular expert is invoked.">
+        <defs>
+          <marker id="f3a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk"/></marker>
+        </defs>
+        <text class="rail" x="120" y="42">GRAPH RISK SCORE — THE ONE NUMBER, OWNED BY THE GRAPH EXPERT</text>
+
+        <rect class="n n-det n-dash" x="268" y="118" width="407" height="44" rx="2"/>
+        <line x1="120" y1="140" x2="872" y2="140" class="ed" marker-end="url(#f3a)"/>
+        <line x1="120" y1="134" x2="120" y2="150" class="ed"/>
+        <line x1="268" y1="134" x2="268" y2="150" class="ed"/>
+        <line x1="490" y1="134" x2="490" y2="150" class="ed"/>
+        <line x1="675" y1="134" x2="675" y2="150" class="ed"/>
+        <line x1="860" y1="134" x2="860" y2="150" class="ed"/>
+        <line x1="305" y1="96" x2="305" y2="176" class="ed-blk"/>
+
+        <text class="note-blk" x="305" y="88" text-anchor="middle">0.25 — review threshold</text>
+        <text class="sub" x="120" y="192" text-anchor="middle">0.00</text>
+        <text class="sub" x="268" y="192" text-anchor="middle">0.20</text>
+        <text class="sub" x="490" y="192" text-anchor="middle">0.50</text>
+        <text class="sub" x="675" y="192" text-anchor="middle">0.75</text>
+        <text class="sub" x="860" y="192" text-anchor="middle">1.00</text>
+        <text class="el-det" x="471" y="216" text-anchor="middle">uncertainty band — the tabular expert is invoked here</text>
+
+        <text class="note" x="120" y="256">…and, independently of the score:  |graph − rules| ≥ 0.40   ·   or the graph expert failed, timed out or is unavailable</text>
+        <text class="note" x="120" y="282">Any of: score &gt; 0.25 · score uncertain · either disagreement · any expert failure  ⇒  reason code ⇒ human_review</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 3 — exactly when the third expert runs.</b> Note that the review threshold sits inside the uncertainty band: a case can be uncertain without being flagged, and flagged without being uncertain. The two conditions are separate reason codes and both are recorded.</figcaption>
+  </figure>
+
+  <div class="col">
+    <h3>What the router may and may not conclude</h3>
+    <p>The policy is a fold over reason codes, not a model. Any code at all produces <code>human_review</code>; an empty list produces <code>proceed_to_onboarding</code>. There is no third outcome — no autonomous rejection exists anywhere in the mounted application.</p>
+    <p>The graph expert's number is the risk score, full stop. The rules and tabular experts can add reason codes and therefore cause a review, but neither can lower graph risk, and neither replaces the number a reviewer sees.</p>
+    <p>Honesty about the sparsity claim: on the current benchmark 94.8% of applications still invoke the specialist, so routing saves very little compute today. It is a correctness and auditability mechanism first — every invocation carries the reason it happened — and an efficiency mechanism only in principle.</p>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th>Reason code</th><th style="width:58%">Fires when</th></tr></thead>
+    <tbody>
+      <tr><td>GRAPH_RISK_ABOVE_REVIEW_THRESHOLD</td><td class="prose">Graph score &gt; 0.25</td></tr>
+      <tr><td>GRAPH_RISK_UNCERTAIN</td><td class="prose">Graph score inside (0.20, 0.75)</td></tr>
+      <tr><td>RULES_GRAPH_DISAGREEMENT</td><td class="prose">|graph − rules| ≥ 0.40, both completed</td></tr>
+      <tr><td>TABULAR_GRAPH_DISAGREEMENT</td><td class="prose">|graph − tabular| ≥ 0.40, both completed</td></tr>
+      <tr><td>EXPERT_FAILURE</td><td class="prose">Any expert timed out or raised</td></tr>
+      <tr><td>PRIMARY_EXPERT_UNAVAILABLE</td><td class="prose">The graph expert produced no score at all</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================== 4 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">04</span>
+    <div>
+      <h2>The workflow state machine</h2>
+      <p>Four LangGraph nodes, one interrupt, and a checkpoint that is safe to store.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>The graph's contract is narrow on purpose. <code>assess</code> is a thin wrapper over the routed MoE — none of its rules, scoring or policy are reimplemented here. <code>investigate</code> runs only when the assessment already demanded review. <code>finalize</code> re-applies the deterministic policy over both results and is the only node permitted to name an action.</p>
+    <p>When the investigator needs a fact nobody has, the graph calls <code>interrupt()</code> and the case is checkpointed mid-flight. Supplying that evidence resumes <em>the same case</em>: the case id is a stable hash of the candidate id, and <code>resume</code> asserts it. A paused case never restarts and never loses its trace.</p>
+  </div>
+
+  <figure>
+    <div class="well">
+      <svg viewBox="0 0 900 400" style="min-width:900px" role="img" aria-label="LangGraph state machine with nodes assess, investigate, finalize and await_information; assess routes directly to finalize when no reason code fired, and investigate loops through await_information via an interrupt for at most one round.">
+        <defs>
+          <marker id="f4a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk"/></marker>
+        </defs>
+        <circle class="dot" cx="60" cy="120" r="8"/>
+        <text class="rail" x="42" y="98">START</text>
+        <path class="ed" d="M70 120 H104" marker-end="url(#f4a)"/>
+
+        <rect class="n n-det" x="110" y="94" width="180" height="52" rx="2"/>
+        <text class="ttl" x="200" y="118" text-anchor="middle">assess</text>
+        <text class="sub" x="200" y="136" text-anchor="middle">routed MoE</text>
+
+        <rect class="n n-det" x="350" y="94" width="180" height="52" rx="2"/>
+        <text class="ttl" x="440" y="118" text-anchor="middle">investigate</text>
+        <text class="sub" x="440" y="136" text-anchor="middle">bounded LLM loop</text>
+
+        <rect class="n n-det" x="590" y="94" width="180" height="52" rx="2"/>
+        <text class="ttl" x="680" y="118" text-anchor="middle">finalize</text>
+        <text class="sub" x="680" y="136" text-anchor="middle">deterministic policy</text>
+
+        <circle class="n" cx="830" cy="120" r="15"/>
+        <text class="sub" x="830" y="124" text-anchor="middle">END</text>
+
+        <rect class="n n-det" x="350" y="250" width="180" height="52" rx="2"/>
+        <text class="ttl" x="440" y="274" text-anchor="middle">await_information</text>
+        <text class="sub" x="440" y="292" text-anchor="middle">checkpoint + pause</text>
+
+        <path class="ed" d="M290 120 H344" marker-end="url(#f4a)"/>
+        <text class="el" x="317" y="112" text-anchor="middle">flagged</text>
+        <path class="ed" d="M530 120 H584" marker-end="url(#f4a)"/>
+        <text class="el" x="557" y="112" text-anchor="middle">done</text>
+        <path class="ed" d="M770 120 H809" marker-end="url(#f4a)"/>
+
+        <path class="ed" d="M200 94 V56 H680 V88" marker-end="url(#f4a)"/>
+        <text class="el" x="440" y="48" text-anchor="middle">no reason code fired — the investigator is never called</text>
+
+        <path class="ed" d="M416 146 V244" marker-end="url(#f4a)"/>
+        <text class="el" x="404" y="186" text-anchor="end">interrupt()</text>
+        <text class="el" x="404" y="202" text-anchor="end">requested items</text>
+        <path class="ed" d="M464 250 V152" marker-end="url(#f4a)"/>
+        <text class="el" x="476" y="186">resume, same case_id</text>
+        <text class="el" x="476" y="202">supplied evidence appended</text>
+
+        <text class="note" x="350" y="328">rounds &lt; max_information_requests (1); otherwise the case goes straight to finalize</text>
+        <text class="note" x="110" y="360">Checkpointer: MemorySaver + JsonPlusSerializer restricted to an explicit 24-type allow-list, so a serializer change cannot start</text>
+        <text class="note" x="110" y="378">accepting arbitrary pickled objects. CaseState holds ids and typed results only; applications are resolved outside the checkpoint.</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 4 — the state machine.</b> The bypass edge along the top is the common case: a candidate with no reason code never reaches the LLM at all. <code>CaseState</code> deliberately excludes API keys, uploaded documents, unredacted identifiers and the application objects themselves, which is what makes a checkpoint safe to persist.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================== 5 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">05</span>
+    <div>
+      <h2>The bounded investigator and its grounding authority</h2>
+      <p>Every path out of the model is narrower than the path in.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>One LLM runs in the active workflow. Its job is narrow: given evidence deterministic experts already produced, is a coordinated ring or a legitimate shared arrangement the better explanation? It must state a ring hypothesis <em>and</em> at least one specific legitimate alternative — an accountant, a franchise, a coworking floor, family ownership, a shared kiosk — before it may conclude anything.</p>
+    <p>It selects from six read-only tools, each scope-checked to exactly one candidate, and is told to pick the next call from what it still does not know rather than calling everything. Its budget is hard: five reasoning steps, six tool calls, fifteen seconds, 2,048 output tokens. Exhausting any of them ends the investigation with an explicit failure code and sends the case to a person.</p>
+  </div>
+
+  <figure>
+    <div class="well">
+      <svg viewBox="0 0 1000 470" style="min-width:1000px" role="img" aria-label="The investigator receives a redacted brief, calls up to six read-only tools, and produces a narrative whose citations are checked by a deterministic validator; valid citations yield an advisory recommendation, any invalid identifier discards the narrative and forces human review.">
+        <defs>
+          <marker id="f5a" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk"/></marker>
+          <marker id="f5l" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk-llm"/></marker>
+          <marker id="f5d" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk-det"/></marker>
+          <marker id="f5b" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto"><polygon points="0,0 8,3.2 0,6.4" class="mk-blk"/></marker>
+        </defs>
+
+        <text class="rail" x="20" y="34">WHAT GOES IN</text>
+        <rect class="n" x="20" y="52" width="230" height="180" rx="2"/>
+        <text class="sub" x="34" y="78">redacted candidate summary</text>
+        <text class="sub" x="34" y="102">assessment + reason codes</text>
+        <text class="sub" x="34" y="126">prior human outcomes, keyed</text>
+        <text class="sub" x="34" y="144">by hashed infrastructure</text>
+        <text class="sub" x="34" y="168">supplied evidence, if resumed</text>
+        <text class="sub" x="34" y="192">the six tool descriptions</text>
+        <text class="sub-det" x="34" y="218">no raw identifiers, no documents</text>
+
+        <path class="ed" d="M250 130 H304" marker-end="url(#f5a)"/>
+        <text class="el" x="277" y="122" text-anchor="middle">brief</text>
+
+        <text class="rail" x="310" y="34">THE ONLY LLM</text>
+        <rect class="n n-llm" x="310" y="52" width="330" height="130" rx="2"/>
+        <text class="ttl" x="324" y="78">Bounded investigator</text>
+        <text class="sub" x="324" y="100">claude-opus-5, high effort, when a key is set</text>
+        <text class="sub" x="324" y="118">a deterministic policy stands in when not</text>
+        <text class="sub" x="324" y="144">must state a ring hypothesis AND</text>
+        <text class="sub" x="324" y="162">at least one legitimate alternative</text>
+        <text class="note" x="310" y="204">≤ 5 steps · ≤ 6 tool calls · ≤ 15 s · ≤ 2048 output tokens</text>
+
+        <rect class="n" x="310" y="224" width="330" height="196" rx="2"/>
+        <text class="rail" x="324" y="248">READ-ONLY TOOLS, SCOPED TO ONE CANDIDATE</text>
+        <text class="sub" x="324" y="274">get_candidate_summary</text>
+        <text class="sub" x="324" y="298">get_relationship_evidence</text>
+        <text class="sub" x="324" y="322">get_member_profile</text>
+        <text class="sub" x="324" y="346">compare_submission_timeline</text>
+        <text class="sub" x="324" y="370">get_prior_review_history</text>
+        <text class="sub" x="324" y="394">inspect_document_consistency</text>
+
+        <path class="ed-llm" d="M400 182 V218" marker-end="url(#f5l)"/>
+        <text class="el-llm" x="392" y="204" text-anchor="end">call</text>
+        <path class="ed-llm" d="M560 224 V188" marker-end="url(#f5l)"/>
+        <text class="el-llm" x="568" y="204">observation</text>
+
+        <path class="ed-llm" d="M640 117 H734" marker-end="url(#f5l)"/>
+        <text class="el-llm" x="687" y="109" text-anchor="middle">cited IDs</text>
+
+        <text class="rail" x="740" y="34">THE GROUNDING AUTHORITY</text>
+        <rect class="n n-det" x="740" y="52" width="240" height="100" rx="2"/>
+        <text class="ttl" x="754" y="76">Citation validator</text>
+        <text class="sub" x="754" y="96">deterministic; no model</text>
+        <text class="sub" x="754" y="114">checks every cited id against</text>
+        <text class="sub" x="754" y="132">the case evidence catalogue</text>
+
+        <path class="ed" d="M860 152 V172 H700 V246 H734" marker-end="url(#f5d)"/>
+        <path class="ed" d="M700 172 V362 H734" marker-end="url(#f5b)"/>
+        <text class="el-det" x="726" y="240" text-anchor="end">valid</text>
+        <text class="el" x="726" y="356" text-anchor="end">invalid</text>
+
+        <rect class="n n-det" x="740" y="220" width="240" height="86" rx="2"/>
+        <text class="ttl" x="754" y="244">GROUNDED</text>
+        <text class="sub" x="754" y="264">recommendation recorded</text>
+        <text class="sub" x="754" y="282">as advice for the reviewer</text>
+        <text class="sub-det" x="754" y="300">may raise, never lower</text>
+
+        <rect class="n n-blk" x="740" y="332" width="240" height="106" rx="2"/>
+        <text class="ttl" x="754" y="356">INSUFFICIENT_GROUNDING</text>
+        <text class="sub" x="754" y="376">HALLUCINATED_EVIDENCE_ID</text>
+        <text class="sub" x="754" y="392">— the id does not exist</text>
+        <text class="sub" x="754" y="412">UNAUTHORIZED_EVIDENCE_ID</text>
+        <text class="sub" x="754" y="428">— no tool ever disclosed it</text>
+      </svg>
+    </div>
+    <figcaption><b>Figure 5 — the cage.</b> The validator separates two failures that mean different things. An <em>unknown</em> id is a fabrication: the evidence does not exist for this case. An <em>undisclosed</em> id is unauthorised: the evidence is real, but no tool call ever showed it to the investigator, so the narrative cannot honestly have read it. Either one discards the whole narrative — it is retained as <code>rejected_narrative</code> for audit — and forces the case to a person.</figcaption>
+  </figure>
+
+  <div class="col">
+    <h3>Why the validator is code and not a second model</h3>
+    <p>The brief specification permitted a second, evidence-grounding LLM. It is not used. Citation checking is a set-membership question with an exact answer, and answering it in plain code makes it cheap, deterministic, testable and incapable of being talked out of a rejection. A second model would have added a failure mode without adding an ability.</p>
+    <p>The catalogue it checks against is built from the union of the candidate's graph edges and every evidence item each expert emitted — so it is precisely the set of things that genuinely belong to this case, and nothing else.</p>
+    <h3>Prior-case memory</h3>
+    <p>The investigator can read how humans resolved earlier cases on the <em>same hashed infrastructure</em>: confirmed ring, legitimate accountant, legitimate franchise, legitimate coworking, legitimate family, or inconclusive. This is an exact lookup over recorded outcomes, not vector retrieval and not free-form model recall. Prior outcomes may inform an explanation; they may never overwrite the graph expert's number.</p>
+  </div>
+</section>
+
+<!-- ============================== 6 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">06</span>
+    <div>
+      <h2>Custody</h2>
+      <p>Persistence, the human decision, and the one door to the outside world.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>Every state change reads the current row, checks the caller's <code>expected_version</code>, writes the new values and its audit event in one transaction, and bumps the version. A stale version is rejected outright and returns the current one, never silently merged — so two reviewers on the same case get a visible conflict rather than a lost write.</p>
+    <p>The audit log is append-only and enforced at the model layer: <code>case_opened</code>, <code>automated_decision_recorded</code>, <code>investigation_recorded</code>, <code>information_requested</code>, <code>information_supplied</code>, <code>case_claimed</code>, <code>case_released</code>, <code>human_decision_recorded</code>, <code>onboarding_handoff_recorded</code>.</p>
+    <p>A reviewer's resolution is stored <em>beside</em> the automated decision, not over it. Reconstructing what the machine said before a person disagreed with it is always possible, which is the only version of accountability that survives contact with a real incident review.</p>
+    <p>The gateway is the single egress. A hand-off attempted without a recorded <code>approve_onboarding</code> raises <code>HandoffNotPermitted</code>. The default gateway is simulated; the Razorpay adapter refuses to run unless test-mode partner credentials are explicitly configured and the key carries the test prefix. There is no production mode and no fallback — an unconfigured adapter raises rather than degrading quietly.</p>
+  </div>
+</section>
+
+<!-- ============================== 7 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">07</span>
+    <div>
+      <h2>The invariants</h2>
+      <p>The properties every other design choice exists to protect.</p>
+    </div>
+  </div>
+
+  <h3>An LLM opinion can only raise</h3>
+  <div class="col">
+    <p>This is the load-bearing rule, and it is nine lines of code in <code>_apply_policy</code>. Read the row for a candidate the router cleared: a recommendation of review or more information raises it. Read the row the router flagged: nothing the model can say brings it back down.</p>
+  </div>
+  <table class="matrix">
+    <thead>
+      <tr><th></th><th>continue_onboarding</th><th>request_information</th><th>human_review</th><th>abstain / failed</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>router: proceed</th>
+        <td class="cell-pass">proceed</td>
+        <td class="cell-raise">↑ human_review</td>
+        <td class="cell-raise">↑ human_review</td>
+        <td class="cell-pass">proceed</td>
+      </tr>
+      <tr>
+        <th>router: human_review</th>
+        <td class="cell-hold">human_review</td>
+        <td class="cell-hold">human_review</td>
+        <td class="cell-hold">human_review</td>
+        <td class="cell-hold">human_review</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="legend-note">The bottom row never moves. <code>primary_risk_score</code> on the resulting decision is always the graph expert's number, in every cell.</p>
+
+  <h3>Who may do what</h3>
+  <table class="tbl">
+    <thead><tr><th>Capability</th><th>Deterministic code</th><th>Investigator</th><th>Human reviewer</th></tr></thead>
+    <tbody>
+      <tr><td class="prose">Produce the risk score</td><td class="yes">yes — graph expert</td><td class="no">never</td><td class="no">never</td></tr>
+      <tr><td class="prose">Raise a case to review</td><td class="yes">yes</td><td class="yes">yes, advisory</td><td class="yes">yes</td></tr>
+      <tr><td class="prose">Lower a case</td><td class="yes">yes — policy only</td><td class="no">never</td><td class="yes">yes, on record</td></tr>
+      <tr><td class="prose">Request more evidence</td><td class="no">—</td><td class="yes">yes, ≤ 1 round</td><td class="yes">yes</td></tr>
+      <tr><td class="prose">Approve onboarding</td><td class="no">never</td><td class="no">never</td><td class="yes">yes, named</td></tr>
+      <tr><td class="prose">Reject or blacklist</td><td class="no">not implemented</td><td class="no">not implemented</td><td class="no">hold or escalate only</td></tr>
+      <tr><td class="prose">Call the gateway</td><td class="no">no reference to it</td><td class="no">no reference to it</td><td class="yes">only after approval</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <span class="tag">Deliberately absent</span>
+    <p>The original automatic-decision API still exists in the repository but is <b>not mounted</b> on the reviewer application, because it can emit automatic rejection outcomes. It is retained only as an isolated backwards-compatibility fixture on a separate FastAPI instance. Nothing a reviewer touches can reach it.</p>
+  </div>
+
+  <div class="col">
+    <h3>Missing evidence is never clean evidence</h3>
+    <p>Absent device or IP observations force review even below the risk threshold. An expert that times out produces a reason code, not a zero. A tool that cannot answer returns an explicit unavailable result rather than an empty one. A wider-context component above the 50-merchant cap requires human review regardless of score. Each of these is a place where the cheap failure mode would have been to treat silence as safety.</p>
+  </div>
+</section>
+
+<!-- ============================== 8 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">08</span>
+    <div>
+      <h2>The evaluation plane</h2>
+      <p>Structurally separate from the review desk, and read-only by construction.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>Evaluation runs on its own datasets, against models fitted afresh in memory, and cannot reach a case. The challenger endpoint scores an existing candidate in shadow and is explicitly incapable of modifying a case, recording verification, approving or rejecting a merchant, or calling a gateway.</p>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th>Dataset</th><th class="num">Applications</th><th>Split</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>synthetic_merchants</td><td class="num">104</td><td>component-held-out</td><td class="prose">The live review-desk world</td></tr>
+      <tr><td>expanded_merchants</td><td class="num">2,002</td><td>1,402 / 600 · 35 unseen rings</td><td class="prose">Seven-baseline comparison</td></tr>
+      <tr><td>performance_merchants</td><td class="num">4,071</td><td>2,417 / 813 / 841 · 49 test rings</td><td class="prose">Sealed merchant/peer challenger</td></tr>
+      <tr><td>relationships</td><td class="num">6,082</td><td>3,654 / 1,236 / 1,192 · 73 test rings</td><td class="prose">Hard-ring recovery experiment</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="tag">What the numbers actually say</span>
+    <p>On the 600-application held-out expanded benchmark, the shipped routed system reaches precision <b>0.393</b> at recall <b>0.991</b>, with a false-positive rate of <b>0.930</b> and a 99.2% review rate. Ring recall is 1.000 — meaning at least one member of every labelled ring was flagged, not that rings were recovered whole.</p>
+    <p>That is a system that catches nearly everything by reviewing nearly everything. It is not production-ready, and the benchmark exists to make that visible rather than to flatter the design.</p>
+    <p>A sealed challenger model reached 0.612 precision and 0.835 PR-AUC on its own fresh test, cutting false flags from 486 to 160 — but merchant recall fell to 82.4% and ring recall to 87.8%, missing the 90% development target. It was <b>not promoted</b>. The review desk keeps its frozen model and cases; the challenger is available for read-only shadow scoring only. A separate wider-context experiment failed its adoption checks outright and is preserved as a negative result.</p>
+    <p>Every figure here is synthetic. None of it is Razorpay production performance.</p>
+  </div>
+</section>
+
+<!-- ============================== 9 ============================== -->
+<section>
+  <div class="sechead">
+    <span class="num">09</span>
+    <div>
+      <h2>Deployment</h2>
+      <p>Two processes, one file, no secrets required.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p>The Streamlit reviewer UI on <code>:8501</code> talks to the FastAPI service on <code>:8000</code> over plain HTTP; it holds no business logic and no direct database handle. The API assembles one process-wide runtime on first use — fitting the graph and tabular models on the training partition, building the evidence graph, and wiring the workflow, store, service and gateway — behind an async lock.</p>
+    <p>State lives in a single SQLite file. Without <code>ANTHROPIC_API_KEY</code> the system runs in <code>LLM_DISABLED</code> mode: a deterministic investigator with the same tool-selection discipline stands in, and every surface displays the mode banner alongside the <code>SIMULATED</code> data and gateway labels. The full demonstration, all tests and the acceptance run need no key.</p>
+    <p>The reviewer UI always shows three labels — data, gateway, investigator — so nothing on screen can be mistaken for a production decision on real merchants.</p>
+  </div>
+
+  <h3>Known limits</h3>
+  <div class="col">
+    <ul class="tight">
+      <li>Sparse routing currently saves almost no compute: 94.8% of applications still invoke the specialist.</li>
+      <li>False-positive rates at the shipped threshold are high enough that the system's honest output is a review queue, not a filter.</li>
+      <li>Some slow legitimate shared-infrastructure groups and some slow labelled rings have genuinely overlapping available evidence. Separating them needs independent verified relationship evidence — settlement authority, ownership, authorised intermediaries, tenancy — not a more confident model.</li>
+      <li>No real identity verification, no document OCR in the active path, no production calibration, and designed rather than observed fraud prevalence.</li>
+      <li>Benchmark partitions share synthetic scenario families, so held-out generalisation is bounded by the generator's imagination.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  MerchantShield · architecture reference · generated from the source tree at <span class="mono">merchantshield/</span><br>
+  Razorpay AI Buildathon · Lohith<br>
+  Every identity, document, link, scenario and metric described here is synthetic. The measured results are not production Razorpay performance.
+</footer>
+
+</div>
 </body>
 </html>
