@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: merchantshield
+    name: merchantshield-demo
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
