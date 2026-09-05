@@ -29,6 +29,9 @@ It is not a production deployment.
   automatically reject or permanently blacklist a merchant.
 - The demo runs without an API key in clearly labelled `LLM_DISABLED` mode.
 - The onboarding gateway is simulated by default.
+- The **Check merchants** section accepts pasted or uploaded synthetic merchant
+  details and runs them through the real evidence graph, routed experts,
+  bounded investigator and grounding checks without saving the submission.
 
 ## Run the demonstration
 
@@ -44,12 +47,50 @@ seeds synthetic review cases. Then open:
 - reviewer UI: `http://localhost:8501`
 - API documentation: `http://localhost:8000/docs`
 
+### Streamlit Community Cloud
+
+Use `streamlit_cloud.py` as the **Main file path** when creating a Community
+Cloud app. It starts the same FastAPI service on loopback, seeds the synthetic
+review queue once, and then renders the normal reviewer UI. No secrets are
+required: leave the app in `LLM_DISABLED` mode for the public demonstration.
+Community Cloud storage is ephemeral, so uploaded CSVs and the SQLite case
+database are not a durable production record. Keep the repository public (or
+grant Streamlit access to a private repository), and never add `.env`, API
+keys, real KYC documents, or customer data.
+
 Run verification separately with:
 
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/python scripts/acceptance.py
 ```
+
+### Live merchant check
+
+Open **Check merchants** in the top navigation. In three clicks you can choose
+an example and run it:
+
+- one new merchant that matches an existing synthetic ring;
+- three new merchants that form a linked group;
+- three independent merchants as a negative control.
+
+An employee can also paste CSV rows or upload a `.csv` file containing these
+columns:
+
+```text
+merchant_id,business_name,owner_name,bank_account,device_fingerprint,ip_address,registered_address,submitted_at
+```
+
+The live check accepts multiple CSV files in one batch, up to 1 MB and 100
+submitted merchants in total. It compares those merchants with each other and the
+frozen synthetic reference population. It returns the real routing and workflow
+trace, but does not persist the input, create a final fraud verdict, blacklist a
+merchant, authenticate documents, or call a gateway. Use synthetic details only.
+
+For the recorded demonstration, upload all six files under
+`demo_uploads/six_file_ring/` together. They reproducibly form one six-merchant
+synthetic group with four corroborating similarity types. The timed narration
+and screen directions are in `docs/FIVE_MINUTE_DEMO_SCRIPT.md`.
 
 ## Set up on a friend's laptop
 
@@ -323,6 +364,43 @@ All identities remain synthetic. Both partitions share scenario families;
 indistinguishable legitimate and fraudulent applications need additional
 verified evidence, not stronger claims or more aggressive automatic decisions.
 
+### How to explain the evidence in a demo
+
+The validation page is an ablation, not a single opaque “AI score.” Every row
+uses the same untouched, component-held-out applications: **Rules only** is the
+deterministic control; **Clustering/Graph only** tests relationship evidence;
+**Tabular only** tests merchant-level signals; **Graph ML** fits topology
+features; **Hybrid** combines graph, tabular and peer context; and **Routed
+MoE** selectively calls the specialists when graph uncertainty or rule
+disagreement warrants it. The optional investigator/reviewer LLM is an
+evidence narrator, never the owner of the score or an onboarding action.
+
+The practical operating question is the threshold trade-off: a lower threshold
+catches more labelled fraud but creates more legitimate reviews; a higher one
+reduces false alarms but can miss a ring. The page shows the held-out rates,
+false-positive counts, review workload and configured cost together, with the
+threshold selected on validation data only. These are synthetic benchmark
+results, not Razorpay production claims.
+
+### How real onboarding data would map into this demo
+
+In production, MerchantShield would consume fields already emitted by a KYC or
+onboarding pipeline—not ask an employee to hand-author a CSV. The demo CSV is a
+safe stand-in for that event contract:
+
+| Demo field | Production source (illustrative) | Treatment in this repository |
+|---|---|---|
+| `merchant_id`, `submitted_at` | onboarding application/event log | synthetic IDs and timestamps |
+| `owner_name`, `business_name` | verified KYC/business profile | synthetic names only; no document OCR |
+| `bank_account` | payout/settlement verification | synthetic token; exact value is never shown to a model explanation |
+| `device_fingerprint`, `ip_address` | risk telemetry/SDK | synthetic values; missing values force review |
+| `registered_address` | KYC address record | synthetic address tokens; shared offices can be legitimate |
+
+An adapter would normalize and hash/tokenize these signals before graph
+construction, enforce retention and access controls, and attach independent
+document-verification results. Those controls are intentionally out of scope
+for this offline, synthetic demonstration.
+
 ### Previous expanded benchmark (preserved)
 
 The larger labelled dataset is **`data/evaluation/expanded_merchants.jsonl`**.
@@ -469,5 +547,14 @@ UI now requests `?dataset=performance` for the fresh-test comparison above.
 - A new ring's first merchant may have no cross-application link yet.
 - Shared devices, addresses and networks can be legitimate, which is why the
   system measures false-positive cost and preserves human authority.
+
+## Contributors
+
+- **[@johan784](https://github.com/johan784) (Johan)** — product architecture, evaluation design, multi-file merchant-ring
+  workflow, demonstration design, release validation and documentation.
+- **[@lxhith24](https://github.com/lxhith24)** — application integration,
+  deployment, repository management and implementation support.
+
+MerchantShield was developed collaboratively for the Razorpay AI Buildathon.
 
 Built for the Razorpay AI Buildathon.

@@ -12,8 +12,17 @@ from pathlib import Path
 from typing import Any, Dict, Literal
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
-from ..demo import HARNESSES, ScenarioNotFound, resolve_scenario, resolve_scenarios
+from ..demo import (
+    HARNESSES,
+    LIVE_CHECK_EXAMPLES,
+    ScenarioNotFound,
+    parse_live_check_csv,
+    resolve_scenario,
+    resolve_scenarios,
+    run_live_check,
+)
 from ..runtime import get_runtime
 
 router = APIRouter(prefix="/api/v1", tags=["demonstration"])
@@ -29,6 +38,12 @@ DISCLAIMER = (
     "All identities, documents, links and metrics in MerchantShield are "
     "synthetic. They are not production Razorpay performance."
 )
+
+
+class LiveCheckRequest(BaseModel):
+    """Synthetic CSV pasted or uploaded by a reviewer for transient analysis."""
+
+    csv_text: str = Field(..., min_length=1, max_length=1_000_000)
 
 
 @router.get("/meta/status", summary="Labels and versions every surface must display")
@@ -95,6 +110,35 @@ async def run_harness(key: str) -> Dict[str, Any]:
     payload["labels"] = runtime.labels
     payload["disclaimer"] = DISCLAIMER
     return payload
+
+
+@router.get("/demo/live-check/examples", summary="Synthetic examples for the live merchant check")
+async def live_check_examples() -> Dict[str, Any]:
+    return {
+        "examples": LIVE_CHECK_EXAMPLES,
+        "required_columns": [
+            "merchant_id", "business_name", "owner_name", "bank_account",
+            "device_fingerprint", "ip_address", "registered_address", "submitted_at",
+        ],
+        "disclaimer": DISCLAIMER,
+    }
+
+
+@router.post("/demo/live-check", summary="Check new synthetic merchant details for ring links")
+async def live_check(request: LiveCheckRequest) -> Dict[str, Any]:
+    runtime = await get_runtime()
+    try:
+        applications = parse_live_check_csv(request.csv_text)
+        result = await run_live_check(applications, runtime=runtime)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    result["labels"] = runtime.labels
+    result["disclaimer"] = DISCLAIMER
+    result["scope_note"] = (
+        "Compared with this submission and the frozen synthetic reference population. "
+        "This checks relationship signals; it does not authenticate documents or prove fraud."
+    )
+    return result
 
 
 @router.get("/evaluation/report", summary="Frozen held-out evaluation report")
