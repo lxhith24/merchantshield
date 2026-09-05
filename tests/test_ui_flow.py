@@ -1,7 +1,10 @@
 """Exercise the review desk as a user, with no network or persistent writes."""
 from copy import deepcopy
+import csv
+import io
 import json
 from pathlib import Path
+import pytest
 from unittest.mock import patch
 
 from streamlit.testing.v1 import AppTest
@@ -14,6 +17,7 @@ class DemoClient:
     def __init__(self):
         self.claims = []
         self.resolutions = []
+        self.live_checks = []
         self.record = {
             "case_id": "case-preview", "version": 1, "status": "pending_review",
             "member_count": 2, "members": [],
@@ -35,6 +39,24 @@ class DemoClient:
 
     def events(self, case_id):
         return {"events": []}
+
+    def live_check_examples(self):
+        return {
+            "examples": {
+                "known_ring_match": {"label": "known_ring_match.csv", "description": "Known match", "csv": "known"},
+                "new_ring": {"label": "alpha_ring.csv", "description": "Linked batch", "csv": "alpha"},
+                "independent": {"label": "beta_clean.csv", "description": "Clean batch", "csv": "beta"},
+            }
+        }
+
+    def live_check(self, csv_text):
+        self.live_checks.append(csv_text)
+        return {
+            "submitted_count": 3,
+            "result_count": 0,
+            "results": [],
+            "scope_note": "Synthetic transient comparison.",
+        }
 
     def claim(self, case_id, reviewer, version):
         self.claims.append((case_id, reviewer, version))
@@ -94,6 +116,20 @@ def test_top_navigation_returns_to_queue_without_resolving():
         assert client.resolutions == []
 
 
+def test_live_check_navigation_loads_a_fixture_and_calls_the_real_client_method():
+    client = DemoClient()
+    with patch.object(ui, "get_client", return_value=client):
+        at = app().run()
+        at.button(key="nav_live_check").click().run()
+        assert not at.exception
+        assert button(at, "alpha_ring.csv")
+        at.button(key="live-example-new_ring").click().run()
+        button(at, "Run live check").click().run()
+        assert not at.exception
+        assert client.live_checks == ["alpha"]
+        assert any("Synthetic transient comparison" in item.value for item in at.caption)
+
+
 def test_expanded_validation_shows_scope_and_seed_ranges():
     client = DemoClient()
     report = json.loads((Path(__file__).resolve().parents[1] / "data/evaluation/expanded_report.json").read_text())
@@ -104,7 +140,10 @@ def test_expanded_validation_shows_scope_and_seed_ranges():
         assert at.subheader[0].value == "Expanded synthetic benchmark"
         assert "not promoted" in at.info[0].value
         assert any("35 held-out rings" in caption.value for caption in at.caption)
-        assert len(at.dataframe) == 3
+        # Benchmark, hard-case cohort, layer ablation, routed confusion summary,
+        # and split-sensitivity tables are all rendered as evidence panels.
+        assert len(at.dataframe) >= 5
+        assert any("Layer comparison" in heading.value for heading in at.subheader)
         assert client.claims == client.resolutions == []
 
 
@@ -158,3 +197,47 @@ def test_empty_reviewer_cannot_start_a_claim():
         assert not at.exception
         assert client.claims == []
         assert any("reviewer name" in item.value for item in at.warning)
+
+
+def test_named_reviewer_sees_a_friendly_session_greeting():
+    client = DemoClient()
+    with patch.object(ui, "get_client", return_value=client):
+        at = app().run()
+        at.text_input(key="reviewer_id").set_value("Johan").run()
+        assert not at.exception
+        assert any("Hey, Johan" in item.value for item in at.get("html"))
+
+
+def test_multiple_csv_uploads_are_combined_into_one_batch():
+    header = "merchant_id,business_name,owner_name,bank_account,device_fingerprint,ip_address,registered_address,submitted_at"
+
+    class Upload:
+        def __init__(self, text):
+            self.text = text
+
+        def getvalue(self):
+            return self.text.encode("utf-8")
+
+    merged = ui.combine_live_check_uploads(
+        [
+            Upload(header + "\nA-001,One Shop,A One,111111111,device-a,198.51.100.1,Address A,2026-01-01T00:00:00Z\n"),
+            Upload(header + "\nA-002,Two Shop,A Two,111111111,device-a,198.51.100.2,Address B,2026-01-01T00:00:10Z\n"),
+            Upload(header + "\nA-003,Three Shop,A Three,111111111,device-b,198.51.100.3,Address C,2026-01-01T00:00:20Z\n"),
+        ]
+    )
+    rows = list(csv.DictReader(io.StringIO(merged)))
+    assert [row["merchant_id"] for row in rows] == ["A-001", "A-002", "A-003"]
+
+
+def test_multiple_csv_uploads_keep_the_combined_merchant_limit():
+    class Upload:
+        def __init__(self, text):
+            self.text = text
+
+        def getvalue(self):
+            return self.text.encode("utf-8")
+
+    header = "merchant_id,business_name,owner_name,bank_account,device_fingerprint,ip_address,registered_address,submitted_at"
+    row = "A-001,One Shop,A One,111111111,device-a,198.51.100.1,Address A,2026-01-01T00:00:00Z"
+    with pytest.raises(ValueError, match="100-merchant demo limit"):
+        ui.combine_live_check_uploads([Upload(header + "\n" + "\n".join(row.replace("A-001", f"A-{n:03d}") for n in range(101)))])

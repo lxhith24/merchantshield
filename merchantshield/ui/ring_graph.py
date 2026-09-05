@@ -17,13 +17,13 @@ from typing import Any, Iterable, List, Mapping, Optional, Sequence, Tuple
 #: Attribute -> (stroke colour, human label). Ordered strongest first, which is
 #: also the order the legend uses.
 ATTRIBUTE_STYLE: Tuple[Tuple[str, str, str], ...] = (
-    ("bank_account", "#c3a173", "Settlement account"),
-    ("owner_pan", "#c09780", "Owner PAN"),
-    ("device_fingerprint", "#7aafa9", "Device fingerprint"),
-    ("address_hash", "#82a8bf", "Registered address"),
-    ("ip_address", "#8996af", "Submission IP"),
-    ("phone_series", "#b09abe", "Phone series"),
-    ("email_domain", "#9aa69d", "Email domain"),
+    ("bank_account", "#EE725C", "Settlement account"),
+    ("owner_pan", "#E14B42", "Owner PAN"),
+    ("device_fingerprint", "#E9A06D", "Device fingerprint"),
+    ("address_hash", "#B88670", "Registered address"),
+    ("ip_address", "#8FA9A4", "Submission IP"),
+    ("phone_series", "#B89AB8", "Phone series"),
+    ("email_domain", "#8C8C8C", "Email domain"),
 )
 
 _COLOUR = {attribute: colour for attribute, colour, _ in ATTRIBUTE_STYLE}
@@ -31,7 +31,7 @@ _LABEL = {attribute: label for attribute, _, label in ATTRIBUTE_STYLE}
 _RANK = {attribute: index for index, (attribute, _, _) in enumerate(ATTRIBUTE_STYLE)}
 
 NODE_RADIUS = 26.0
-_FALLBACK_COLOUR = "#64748b"
+_FALLBACK_COLOUR = "#86868B"
 
 
 def attribute_colour(attribute: str) -> str:
@@ -119,7 +119,7 @@ def render_ring_svg(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'width="100%" height="{height}" role="img" '
         f'aria-label="Evidence links between {len(member_ids)} applications">',
-        f'<rect width="{width}" height="{height}" rx="20" fill="#101616"/>',
+        f'<rect width="{width}" height="{height}" rx="20" fill="#0C0C0C"/>',
     ]
 
     for key in sorted(pair_attributes):
@@ -149,17 +149,17 @@ def render_ring_svg(
         member = by_id.get(member_id)
         name = _display_name(member, member_id)
         parts.append(
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{NODE_RADIUS}" fill="#1e2b29" '
-            'stroke="#57756e" stroke-width="1.2"/>'
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{NODE_RADIUS}" fill="#151515" '
+            'stroke="#3A3A3A" stroke-width="1.2"/>'
             f'<text x="{x:.1f}" y="{y + 4:.1f}" text-anchor="middle" '
-            'font-family="Times New Roman, Times, serif" '
+            'font-family="-apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif" '
             'font-size="10.5" font-weight="600" '
-            f'fill="#e5ece8">{html.escape(_short(member_id))}</text>'
+            f'fill="#F2F0ED">{html.escape(_short(member_id))}</text>'
             f'<rect x="{x - 72:.1f}" y="{y + NODE_RADIUS + 5:.1f}" '
-            'width="144" height="22" rx="6" fill="#1e2b29" stroke="#364b45"/>'
+            'width="144" height="22" rx="5" fill="#151515" stroke="#323232"/>'
             f'<text x="{x:.1f}" y="{y + NODE_RADIUS + 20:.1f}" text-anchor="middle" '
-            'font-family="Times New Roman, Times, serif" '
-            'font-size="10.5" fill="#c1ccc7">'
+            'font-family="-apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif" '
+            'font-size="10.5" fill="#B7B3AE">'
             f"{html.escape(name)}</text>"
         )
 
@@ -171,7 +171,7 @@ def render_ring_svg(
     if len(member_ids) == 1:
         parts.append(
             f'<text x="{width / 2:.0f}" y="{height - 30}" text-anchor="middle" '
-            'font-family="Times New Roman, Times, serif" font-size="12" fill="#a5b5ae">'
+            'font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#8C8985">'
             "No linked applications: nothing to corroborate, nothing to clear."
             "</text>"
         )
@@ -188,7 +188,7 @@ def svg_data_uri(svg: str) -> str:
 def _legend(attributes: Sequence[str], width: int, height: int) -> str:
     if not attributes:
         return ""
-    parts = ['<g font-family="Times New Roman, Times, serif" font-size="11" fill="#b4c0bb">']
+    parts = ['<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#AAA6A1">']
     x = 16.0
     y = float(height - 12)
     for attribute in attributes:
@@ -210,9 +210,9 @@ def _empty_svg(width: int, height: int, message: str) -> str:
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'width="100%" height="{height}">'
-        f'<rect width="{width}" height="{height}" rx="14" fill="#101616" '
-        'stroke="#364b45"/>'
+        f'<rect width="{width}" height="{height}" rx="14" fill="#0C0C0C" '
+        'stroke="#292929"/>'
         f'<text x="{width / 2:.0f}" y="{height / 2:.0f}" text-anchor="middle" '
-        'font-family="Times New Roman, Times, serif" font-size="13" fill="#a5b5ae">'
+        'font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#8C8985">'
         f"{html.escape(message)}</text></svg>"
     )

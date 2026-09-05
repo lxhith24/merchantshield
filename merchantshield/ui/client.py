@@ -94,6 +94,12 @@ class MerchantShieldClient:
     def run_harness(self, key: str) -> Dict[str, Any]:
         return self._post(f"/api/v1/demo/harness/{key}", {})
 
+    def live_check_examples(self) -> Dict[str, Any]:
+        return self._get("/api/v1/demo/live-check/examples")
+
+    def live_check(self, csv_text: str) -> Dict[str, Any]:
+        return self._post("/api/v1/demo/live-check", {"csv_text": csv_text})
+
     # -- candidates and cases --------------------------------------------
 
     def candidates(self, *, min_members: int = 1, limit: int = 100) -> Dict[str, Any]:
