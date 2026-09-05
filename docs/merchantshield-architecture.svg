@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
+  <title id="title">MerchantShield system architecture</title>
+  <desc id="desc">A hybrid merchant onboarding risk investigator. Merchant data enters through a safe API, deterministic rules and graph analysis always run, tabular machine learning is routed when needed, and LangGraph coordinates an evidence-bound investigator and human review. Only a human approval can reach the simulated gateway.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0d10"/>
+      <stop offset="1" stop-color="#15191e"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5ba7ff"/>
+      <stop offset="1" stop-color="#2f73d9"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff947f"/>
+      <stop offset="1" stop-color="#ee725c"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7bd8b5"/>
+      <stop offset="1" stop-color="#3ca57c"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7f8a98"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#5ba7ff"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#ff947f"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7bd8b5"/>
+    </marker>
+    <style>
+      .title { font: 700 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #f4f5f6; letter-spacing: -0.02em; }
+      .subtitle { font: 400 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #9aa4af; }
+      .section { font: 700 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #9aa4af; letter-spacing: .14em; text-transform: uppercase; }
+      .box-title { font: 700 17px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #f4f5f6; }
+      .box-copy { font: 400 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #aab3bd; }
+      .tiny { font: 600 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #87929e; letter-spacing: .05em; }
+      .line { stroke: #7f8a98; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .line-blue { stroke: #5ba7ff; stroke-width: 2.2; fill: none; marker-end: url(#arrow-blue); }
+      .line-orange { stroke: #ff947f; stroke-width: 2.2; fill: none; marker-end: url(#arrow-orange); }
+      .line-green { stroke: #7bd8b5; stroke-width: 2.2; fill: none; marker-end: url(#arrow-green); }
+      .box { fill: #151a20; stroke: #303943; stroke-width: 1.5; }
+      .box-blue { fill: #111b2b; stroke: #3d73b8; stroke-width: 1.5; }
+      .box-orange { fill: #251817; stroke: #9d5145; stroke-width: 1.5; }
+      .box-green { fill: #12231d; stroke: #438f6e; stroke-width: 1.5; }
+      .pill { fill: #202832; stroke: #3a4652; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#bg)"/>
+  <circle cx="1450" cy="60" r="280" fill="#244a83" opacity=".08"/>
+  <circle cx="120" cy="900" r="260" fill="#b24e3d" opacity=".06"/>
+
+  <text x="80" y="72" class="title">MerchantShield</text>
+  <text x="80" y="104" class="subtitle">Defensive merchant-onboarding risk investigator · system-level sparse mixture of experts</text>
+  <rect x="80" y="130" width="1440" height="1" fill="#303943"/>
+
+  <!-- Main path -->
+  <text x="80" y="174" class="section">1 · Ingest and build evidence</text>
+  <g filter="url(#shadow)">
+    <rect x="80" y="198" width="220" height="128" rx="16" class="box"/>
+    <text x="106" y="235" class="box-title">Merchant signals</text>
+    <text x="106" y="262" class="box-copy">Onboarding fields, device/IP,</text>
+    <text x="106" y="282" class="box-copy">bank token, address, timestamps</text>
+    <rect x="106" y="297" width="107" height="20" rx="10" class="pill"/>
+    <text x="159" y="311" text-anchor="middle" class="tiny">SYNTHETIC ONLY</text>
+
+    <rect x="350" y="198" width="220" height="128" rx="16" class="box-blue"/>
+    <text x="376" y="235" class="box-title">Safe API boundary</text>
+    <text x="376" y="262" class="box-copy">FastAPI validation and demo</text>
+    <text x="376" y="282" class="box-copy">batch/live-check endpoints</text>
+    <text x="376" y="310" class="tiny">NO AUTO-REJECTION</text>
+
+    <rect x="620" y="198" width="220" height="128" rx="16" class="box-blue"/>
+    <text x="646" y="235" class="box-title">Evidence graph</text>
+    <text x="646" y="262" class="box-copy">Shared-attribute edges,</text>
+    <text x="646" y="282" class="box-copy">components and time context</text>
+    <text x="646" y="310" class="tiny">EXACT + NORMALIZED LINKS</text>
+
+    <rect x="890" y="198" width="220" height="128" rx="16" class="box"/>
+    <text x="916" y="235" class="box-title">Feature views</text>
+    <text x="916" y="262" class="box-copy">Graph topology + identity</text>
+    <text x="916" y="282" class="box-copy">signals + missingness/velocity</text>
+    <text x="916" y="310" class="tiny">LABEL-BLIND AT INFERENCE</text>
+  </g>
+  <path d="M300 262 H342" class="line-blue"/>
+  <path d="M570 262 H612" class="line-blue"/>
+  <path d="M840 262 H882" class="line-blue"/>
+
+  <text x="80" y="382" class="section">2 · Experts run and policy routes</text>
+  <g filter="url(#shadow)">
+    <rect x="80" y="406" width="220" height="142" rx="16" class="box-orange"/>
+    <text x="106" y="443" class="box-title">Rules expert</text>
+    <text x="106" y="470" class="box-copy">Deterministic consistency,</text>
+    <text x="106" y="490" class="box-copy">identity and document signals</text>
+    <text x="106" y="527" class="tiny">ALWAYS RUNS</text>
+
+    <rect x="350" y="406" width="220" height="142" rx="16" class="box-blue"/>
+    <text x="376" y="443" class="box-title">Graph expert</text>
+    <text x="376" y="470" class="box-copy">Relationship strength,</text>
+    <text x="376" y="490" class="box-copy">corroboration and component shape</text>
+    <text x="376" y="527" class="tiny">ALWAYS RUNS</text>
+
+    <rect x="620" y="406" width="220" height="142" rx="16" class="box-blue"/>
+    <text x="646" y="443" class="box-title">Tabular expert</text>
+    <text x="646" y="470" class="box-copy">Fitted merchant-level model</text>
+    <text x="646" y="490" class="box-copy">on identity and onboarding features</text>
+    <text x="646" y="527" class="tiny">ROUTED WHEN NEEDED</text>
+
+    <rect x="890" y="406" width="220" height="142" rx="16" class="box-green"/>
+    <text x="916" y="443" class="box-title">Deterministic router</text>
+    <text x="916" y="470" class="box-copy">Owns numerical score and</text>
+    <text x="916" y="490" class="box-copy">permitted action policy</text>
+    <text x="916" y="527" class="tiny">UNCERTAINTY / DISAGREEMENT → TABULAR</text>
+  </g>
+  <path d="M1000 326 V398" class="line"/>
+  <path d="M190 406 V350 H1000 V398" class="line-orange"/>
+  <path d="M460 406 V350 H1000 V398" class="line-blue"/>
+  <path d="M730 406 V350 H1000 V398" class="line-blue"/>
+
+  <text x="80" y="610" class="section">3 · Orchestrate, explain, and pause safely</text>
+  <g filter="url(#shadow)">
+    <rect x="180" y="634" width="240" height="142" rx="16" class="box"/>
+    <text x="206" y="671" class="box-title">LangGraph workflow</text>
+    <text x="206" y="698" class="box-copy">State, routing, bounded loops,</text>
+    <text x="206" y="718" class="box-copy">interrupt/resume and audit trace</text>
+    <text x="206" y="755" class="tiny">ONE WORKFLOW · NOT A CHATBOT SWARM</text>
+
+    <rect x="480" y="634" width="240" height="142" rx="16" class="box-orange"/>
+    <text x="506" y="671" class="box-title">Bounded investigator</text>
+    <text x="506" y="698" class="box-copy">Optional LLM or deterministic</text>
+    <text x="506" y="718" class="box-copy">narrator for cited evidence</text>
+    <text x="506" y="755" class="tiny">MAY ABSTAIN · NEVER SCORES</text>
+
+    <rect x="780" y="634" width="240" height="142" rx="16" class="box-green"/>
+    <text x="806" y="671" class="box-title">Grounding validator</text>
+    <text x="806" y="698" class="box-copy">Checks every citation against</text>
+    <text x="806" y="718" class="box-copy">known evidence IDs and state</text>
+    <text x="806" y="755" class="tiny">FAIL CLOSED → HUMAN REVIEW</text>
+
+    <rect x="1080" y="634" width="240" height="142" rx="16" class="box"/>
+    <text x="1106" y="671" class="box-title">Human review</text>
+    <text x="1106" y="698" class="box-copy">Verify relationship, request</text>
+    <text x="1106" y="718" class="box-copy">evidence, approve or hold</text>
+    <text x="1106" y="755" class="tiny">FINAL AUTHORITY</text>
+  </g>
+  <path d="M1000 548 V590 H300 V626" class="line"/>
+  <path d="M420 705 H472" class="line-orange"/>
+  <path d="M720 705 H772" class="line-green"/>
+  <path d="M1020 705 H1072" class="line"/>
+
+  <!-- Outcomes -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="838" width="330" height="84" rx="16" class="box-green"/>
+    <text x="106" y="873" class="box-title">Continue onboarding</text>
+    <text x="106" y="898" class="box-copy">Only for permitted low-risk policy path.</text>
+    <rect x="440" y="838" width="330" height="84" rx="16" class="box-orange"/>
+    <text x="466" y="873" class="box-title">Hold / request information</text>
+    <text x="466" y="898" class="box-copy">Missing evidence is not clean evidence.</text>
+    <rect x="800" y="838" width="330" height="84" rx="16" class="box"/>
+    <text x="826" y="873" class="box-title">Audit + persistence</text>
+    <text x="826" y="898" class="box-copy">Versioned cases, events and reviewer outcome.</text>
+    <rect x="1160" y="838" width="360" height="84" rx="16" class="box-blue"/>
+    <text x="1186" y="873" class="box-title">Simulated onboarding gateway</text>
+    <text x="1186" y="898" class="box-copy">Reachable only after recorded human approval.</text>
+  </g>
+  <path d="M1200 776 V824" class="line-orange"/>
+  <path d="M1200 776 V810 H965 V830" class="line"/>
+  <path d="M300 776 V830" class="line-green"/>
+  <path d="M600 776 V830" class="line-orange"/>
+
+  <!-- Evaluation sidecar -->
+  <rect x="1170" y="198" width="350" height="350" rx="18" fill="#10151b" stroke="#303943" stroke-width="1.5"/>
+  <text x="1200" y="235" class="section">Evaluation sidecar</text>
+  <text x="1200" y="270" class="box-title">Synthetic labelled benchmark</text>
+  <text x="1200" y="298" class="box-copy">Legitimate, shared infrastructure,</text>
+  <text x="1200" y="318" class="box-copy">obvious/evasive rings, borderline</text>
+  <line x1="1200" y1="340" x2="1490" y2="340" stroke="#303943"/>
+  <text x="1200" y="372" class="box-title">Leakage-safe protocol</text>
+  <text x="1200" y="400" class="box-copy">Split by ring ID / connected component</text>
+  <text x="1200" y="420" class="box-copy">· train → validation → untouched test</text>
+  <line x1="1200" y1="442" x2="1490" y2="442" stroke="#303943"/>
+  <text x="1200" y="474" class="box-title">Reported measures</text>
+  <text x="1200" y="502" class="box-copy">Precision · recall · PR-AUC · FPR</text>
+  <text x="1200" y="522" class="box-copy">Ring recall · review rate · FP cost</text>
+  <path d="M1110 262 H1162" class="line-blue"/>
+
+  <text x="80" y="958" class="subtitle">Safety contract: synthetic identities only · no autonomous blacklist/reject · LLM output is evidence-bound and optional</text>
+</svg>
