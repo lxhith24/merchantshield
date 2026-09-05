@@ -1,0 +1,12 @@
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+.git
+.pytest_cache
+.streamlit/secrets.toml
+data/uploads
+merchantshield.db
+*.zip
+.DS_Store
+.env
